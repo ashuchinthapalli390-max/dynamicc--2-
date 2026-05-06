@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Flights - TicketX Pro</title>
+    <link rel="stylesheet" href="../src/css/reset.css">
+    <link rel="stylesheet" href="../src/css/variables.css">
+    <link rel="stylesheet" href="../src/css/global.css">
+    <link rel="stylesheet" href="../src/css/navbar.css">
+    <link rel="stylesheet" href="../src/css/search.css">
+    <link rel="stylesheet" href="../src/css/cards.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar__logo" onclick="goToHome()">🎟️ TicketX Pro</div>
+            <ul class="navbar__menu">
+                <li><a href="../index.html">Home</a></li>
+                <li><button class="btn-login" onclick="handleUserClick()">Profile</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <section>
+        <div class="container">
+            <h1>✈️ Book Flight Tickets</h1>
+
+            <!-- Search Form -->
+            <div class="search-container">
+                <form class="search-form" id="flightSearchForm">
+                    <div class="form-group">
+                        <label for="fromCity">From</label>
+                        <select id="fromCity" required>
+                            <option value="">Select City</option>
+                            <option value="Hyderabad">Hyderabad (HYD)</option>
+                            <option value="Bangalore">Bangalore (BLR)</option>
+                            <option value="Delhi">Delhi (DEL)</option>
+                            <option value="Mumbai">Mumbai (BOM)</option>
+                            <option value="Kochi">Kochi (COK)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="toCity">To</label>
+                        <select id="toCity" required>
+                            <option value="">Select City</option>
+                            <option value="Hyderabad">Hyderabad (HYD)</option>
+                            <option value="Bangalore">Bangalore (BLR)</option>
+                            <option value="Delhi">Delhi (DEL)</option>
+                            <option value="Mumbai">Mumbai (BOM)</option>
+                            <option value="Kochi">Kochi (COK)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="flightDate">Departure Date</label>
+                        <input type="date" id="flightDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="passengers">Passengers</label>
+                        <input type="number" id="passengers" min="1" max="9" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="cabinClass">Class</label>
+                        <select id="cabinClass">
+                            <option value="economy">Economy</option>
+                            <option value="business">Business</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Search Flights</button>
+                </form>
+            </div>
+
+            <!-- Sort Options -->
+            <div class="sort-options">
+                <label for="sortByFlight">Sort by:</label>
+                <select id="sortByFlight">
+                    <option value="featured">Featured</option>
+                    <option value="price">Price</option>
+                    <option value="duration">Duration</option>
+                    <option value="rating">Rating</option>
+                </select>
+            </div>
+
+            <!-- Flight Results -->
+            <div id="flightsGrid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 TicketX Pro. All rights reserved.</p>
+    </footer>
+
+    <!-- New Booking System -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.5.3/qrcode.min.js"></script>
+    <script src="../src/js/user-auth.js"></script>
+    <script src="../src/js/booking-payment.js"></script>
+    <script src="../src/js/universal-booking.js"></script>
+    <script src="../src/js/navbar-complete.js"></script>
+
+    <!-- Legacy Scripts -->
+    <script src="../src/js/config/images.js"></script>
+    <script src="../src/js/core/storage.js"></script>
+    <script src="../src/js/core/auth.js"></script>
+    <script src="../src/js/core/utils.js"></script>
+    <script src="../src/js/core/router.js"></script>
+    <script src="../src/js/api/flights-api.js"></script>
+    <script src="../src/js/pages/flights.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theatres - District</title>
+    <link rel="stylesheet" href="../src/district-app/css/district-style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container header-content">
+            <a href="movies.html" class="logo">DistrictMovies</a>
+        </div>
+    </header>
+
+    <div style="background-color: var(--card-bg); padding: 20px 0; border-bottom: 1px solid var(--border-color);">
+        <div class="container">
+            <h1 id="selected-movie-title" style="margin: 0;">Movie Title</h1>
+        </div>
+    </div>
+
+    <main class="container mt-20">
+        <div class="flex-between align-center mb-20">
+            <h2>Theatres</h2>
+            <div style="display: flex; gap: 10px;">
+                <select style="padding: 8px; border-radius: 4px; background: var(--card-bg); color: white; border: 1px solid var(--border-color);">
+                    <option>Filter by Format</option>
+                    <option>2D</option>
+                    <option>3D</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="theatres-list">
+            <!-- Populated by JS -->
+        </div>
+    </main>
+
+    <script src="../src/district-app/js/dummy-data.js"></script>
+    <script src="../src/district-app/js/app.js"></script>
+</body>
+</html>

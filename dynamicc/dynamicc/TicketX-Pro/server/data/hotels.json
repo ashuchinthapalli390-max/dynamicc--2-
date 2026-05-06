@@ -1,0 +1,33 @@
+[
+                    { 
+                        "id": 17, "name": "Taj Palace", "image": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80", "location": "Marine Drive, Mumbai", 
+                        "category": "hotels", "rating": "⭐⭐⭐⭐⭐ 4.9", 
+                        "amenities": ["Free WiFi", "Pool", "Spa", "Restaurant"],
+                        "description": "Experience luxury at its finest with breathtaking ocean views and world-class hospitality.",
+                        "rooms": [
+                            { "type": "Standard Room", "price": 15000, "capacity": "2 Adults", "features": "1 King Bed, City View", "image": "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&q=80" },
+                            { "type": "Deluxe Sea View", "price": 22000, "capacity": "2 Adults, 1 Child", "features": "1 King Bed, Ocean View, Balcony", "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&q=80" },
+                            { "type": "Presidential Suite", "price": 55000, "capacity": "4 Adults", "features": "2 Bedrooms, Living Area, Private Pool", "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400&q=80" }
+                        ]
+                    },
+                    { 
+                        "id": 18, "name": "Marriott Resort", "image": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600&q=80", "location": "Baga Beach, Goa", 
+                        "category": "hotels", "rating": "⭐⭐⭐⭐⭐ 4.7", 
+                        "amenities": ["Free WiFi", "Pool", "Beachfront", "Bar"],
+                        "description": "A vibrant beachfront resort perfect for a relaxing getaway or exciting water sports.",
+                        "rooms": [
+                            { "type": "Standard Room", "price": 12000, "capacity": "2 Adults", "features": "1 Queen Bed, Garden View", "image": "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=400&q=80" },
+                            { "type": "Suite", "price": 18000, "capacity": "3 Adults", "features": "1 King Bed, Sofa Bed, Ocean View", "image": "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&q=80" }
+                        ]
+                    },
+                    { 
+                        "id": 19, "name": "ITC Kohinoor", "image": "https://images.unsplash.com/photo-1551882547-ff40c0d1398c?w=600&q=80", "location": "Hitech City, Hyderabad", 
+                        "category": "hotels", "rating": "⭐⭐⭐⭐⭐ 4.8", 
+                        "amenities": ["Free WiFi", "Gym", "Business Center", "Restaurant"],
+                        "description": "Premium business hotel offering ultimate comfort in the heart of the IT hub.",
+                        "rooms": [
+                            { "type": "Executive Room", "price": 9500, "capacity": "2 Adults", "features": "1 King Bed, Work Desk", "image": "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=400&q=80" },
+                            { "type": "Club Room", "price": 14000, "capacity": "2 Adults", "features": "1 King Bed, Club Lounge Access", "image": "https://images.unsplash.com/photo-1598928506311-c55dd121a977?w=400&q=80" }
+                        ]
+                    }
+                ]

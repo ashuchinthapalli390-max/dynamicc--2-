@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Details - District</title>
+    <link rel="stylesheet" href="../src/district-app/css/district-style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container header-content">
+            <a href="movies.html" class="logo">DistrictMovies</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="movie-details-banner">
+            <img id="movie-banner" src="" alt="Movie Banner" class="details-poster">
+            <div class="details-content">
+                <h1 id="movie-title">Movie Title</h1>
+                <h3 id="movie-rating" style="color: var(--success);">⭐ 0.0 (0 votes)</h3>
+                
+                <div class="genre-tags" id="movie-genres">
+                    <!-- Populated by JS -->
+                </div>
+                
+                <p class="text-muted mb-20" id="movie-duration">0h 0m • Language</p>
+                
+                <p class="mb-20" id="movie-desc" style="max-width: 600px; line-height: 1.8;">
+                    Movie description goes here.
+                </p>
+                
+                <button class="btn" onclick="proceedToTheatres()">Book Tickets</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="../src/district-app/js/dummy-data.js"></script>
+    <script src="../src/district-app/js/app.js"></script>
+</body>
+</html>

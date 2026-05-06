@@ -1,0 +1,5 @@
+[
+                    { "id": 5, "name": "Vande Bharat Exp", "image": "https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=400&q=80", "from": "Delhi", "to": "Varanasi", "price": 1500, "category": "trains", "rating": "⭐⭐⭐⭐⭐", "seats": 72 },
+                    { "id": 6, "name": "Rajdhani Express", "image": "https://images.unsplash.com/photo-1541427468627-a89a96e5ca1d?w=400&q=80", "from": "Mumbai", "to": "Delhi", "price": 2800, "category": "trains", "rating": "⭐⭐⭐⭐⭐", "seats": 72 },
+                    { "id": 7, "name": "Shatabdi Express", "image": "https://images.unsplash.com/photo-1605806616949-1e87b487cb2a?w=400&q=80", "from": "Chennai", "to": "Bangalore", "price": 1100, "category": "trains", "rating": "⭐⭐⭐⭐", "seats": 96 }
+                ]

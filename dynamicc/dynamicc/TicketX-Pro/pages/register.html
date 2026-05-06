@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - TicketX Pro</title>
+    <link rel="stylesheet" href="../src/css/reset.css">
+    <link rel="stylesheet" href="../src/css/variables.css">
+    <link rel="stylesheet" href="../src/css/global.css">
+    <link rel="stylesheet" href="../src/css/auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <form class="auth-form" id="registerForm">
+            <h2>Create Account</h2>
+            
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" placeholder="Enter your full name" required>
+                <span class="form-error" id="nameError"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                <span class="form-error" id="emailError"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required>
+                <span class="form-error" id="phoneError"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Create a password" required>
+                <span class="form-error" id="passwordError"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+                <span class="form-error" id="confirmPasswordError"></span>
+            </div>
+
+            <div class="form-group checkbox">
+                <input type="checkbox" id="terms" name="terms" required>
+                <label for="terms">I agree to the Terms & Conditions</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Register</button>
+
+            <div class="divider"><span>or</span></div>
+
+            <div class="toggle-form">
+                Already have an account? <a href="login.html">Login here</a>
+            </div>
+        </form>
+    </div>
+
+    <script src="../src/js/core/storage.js"></script>
+    <script src="../src/js/core/auth.js"></script>
+    <script src="../src/js/core/utils.js"></script>
+    <script src="../src/js/core/router.js"></script>
+    <script src="../src/js/pages/register.js"></script>
+</body>
+</html>

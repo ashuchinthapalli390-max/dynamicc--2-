@@ -1,0 +1,2903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TicketX Pro - Advanced Ticket Booking Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="neon-theme.css">
+
+    <style>
+        .hidden { display: none !important; }
+        .district-seat {
+            width: 35px; height: 35px; border-radius: 6px; display:flex; align-items:center; justify-content:center;
+            font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;
+            background: #00b894; color: white; border: none;
+        }
+        .district-seat:hover { transform: scale(1.1); filter: brightness(1.2); }
+        .district-seat.booked { background: #d63031; color: white; cursor: not-allowed; opacity: 0.7; pointer-events: none; }
+        .district-seat.selected { background: #fdcb6e; color: black; }
+
+        /* DROPDOWN MENU CSS */
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content {
+            display: none; position: absolute; right: 0; background-color: rgba(20,20,30,0.95);
+            min-width: 160px; box-shadow: 0 8px 16px rgba(0,0,0,0.8); z-index: 1000;
+            border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        .dropdown-content a {
+            color: white; padding: 12px 16px; text-decoration: none; display: block; font-size: 14px;
+            transition: 0.3s;
+        }
+        .dropdown-content a:hover { background-color: rgba(0, 243, 255, 0.1); color: var(--primary); }
+        .dropdown:hover .dropdown-content { display: block; }
+        
+        .location-btn {
+            background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); 
+            padding: 8px 15px; border-radius: 6px; font-family: 'Outfit', sans-serif; cursor: pointer;
+            display: flex; align-items: center; gap: 8px; transition: 0.3s;
+        }
+        .location-btn:hover { background: rgba(255,255,255,0.2); border-color: var(--primary); }
+    </style>
+</head>
+<body>
+    <!-- SPLASH SCREEN -->
+    <!-- CINEMATIC SPLASH SCREEN -->
+    <div id="splash-screen" style="background: #000; display: flex; align-items: center; justify-content: center; position: fixed; inset: 0; z-index: 10000; flex-direction: column; overflow: hidden;">
+        <div style="position: absolute; inset: 0; background: radial-gradient(circle at center, rgba(0, 243, 255, 0.1), transparent 60%); animation: pulseBG 4s infinite alternate;"></div>
+        <div style="font-size: 8vw; font-weight: 900; color: transparent; -webkit-text-stroke: 2px var(--primary); font-family: 'Outfit', sans-serif; animation: cinematicZoom 3.5s cubic-bezier(0.25, 1, 0.5, 1) forwards, glowText 2s infinite alternate; text-align: center; letter-spacing: 5px;">TICKETX PRO</div>
+        <div style="margin-top: 20px; font-size: 16px; color: var(--text-muted); letter-spacing: 8px; font-weight: 600; animation: fadeIn 2s forwards 1.5s; opacity: 0; text-transform: uppercase;">A Cinematic Experience</div>
+        <div style="position: absolute; bottom: 50px; width: 200px; height: 2px; background: rgba(255,255,255,0.1); overflow: hidden;">
+            <div style="width: 100%; height: 100%; background: var(--primary); animation: cinematicLoad 3.5s cubic-bezier(0.8, 0, 0.2, 1) forwards; transform-origin: left; transform: scaleX(0);"></div>
+        </div>
+        <style>
+            @keyframes cinematicZoom { 0% { transform: scale(1.5) translateY(20px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+            @keyframes cinematicLoad { 0% { transform: scaleX(0); } 50% { transform: scaleX(0.4); } 100% { transform: scaleX(1); } }
+            @keyframes pulseBG { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+        </style>
+    </div>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar__logo" onclick="goHome()" style="cursor: pointer;">
+                <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px #00f3ff);">
+                    <rect x="10" y="20" width="80" height="60" rx="10" fill="none" stroke="#00f3ff" stroke-width="6"/>
+                    <path d="M 10 40 L 20 40 A 10 10 0 0 1 20 60 L 10 60" fill="none" stroke="#00f3ff" stroke-width="6"/>
+                    <path d="M 90 40 L 80 40 A 10 10 0 0 0 80 60 L 90 60" fill="none" stroke="#00f3ff" stroke-width="6"/>
+                    <text x="50" y="56" font-family="Outfit" font-size="28" font-weight="800" fill="#fff" text-anchor="middle">TX</text>
+                </svg> TicketX Pro
+            </div>
+
+            <div style="flex: 1; max-width: 300px; margin: 0 20px; position: relative; display: flex; align-items: center;" class="hide-mobile">
+                <input type="text" id="globalSearch" placeholder="Search for movies, trains, events..." style="width: 100%; padding: 8px 15px 8px 35px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white; outline: none; font-family: 'Outfit', sans-serif;" onkeyup="handleSearch(event)">
+                <i class="fas fa-search" style="position: absolute; left: 12px; color: var(--text-muted);"></i>
+            </div>
+
+            <ul class="navbar__menu" id="navMenu" style="align-items: center;">
+                <li style="margin-right: 15px;">
+                    <button class="location-btn" onclick="openLocationModal()">
+                        <i class="fas fa-map-marker-alt" style="color: var(--danger);"></i> 
+                        <span id="navLocationText">Hyderabad</span>
+                        <i class="fas fa-chevron-down" style="font-size: 10px;"></i>
+                    </button>
+                </li>
+                <li><a href="#" onclick="goHome(); return false;"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="#" onclick="switchView('dashboard'); return false;"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="#" onclick="switchView('bookings'); return false;"><i class="fas fa-ticket-alt"></i> My Bookings</a></li>
+                <li><a href="#" onclick="switchView('profile'); return false;"><i class="fas fa-user-circle"></i> Profile</a></li>
+                <li class="dropdown" style="margin-left: 10px;">
+                    <a href="#" onclick="return false;" style="display:flex; align-items:center; gap:5px;"><i class="fas fa-bars"></i> More</a>
+                    <div class="dropdown-content">
+                        <a href="#" onclick="openModal('settingsModal'); return false;"><i class="fas fa-cog" style="width:20px;"></i> Settings</a>
+                        <a href="#" onclick="openModal('helpModal'); return false;"><i class="fas fa-question-circle" style="width:20px;"></i> Help</a>
+                        <a href="#" onclick="openModal('aboutModal'); return false;"><i class="fas fa-info-circle" style="width:20px;"></i> About</a>
+                    </div>
+                </li>
+                <li id="authBtn" style="margin-left: 15px;"></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div id="mainContent">
+        <!-- HOME SECTION -->
+        <section id="homeSection" class="light">
+            <div class="hero">
+                <div class="container">
+                    <h1><i class="fas fa-plane"></i> Book Your Perfect Tickets</h1>
+                    <p>Movies • Trains • Flights • Buses • Events</p>
+                    
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="switchTab('movies', this)"><i class="fas fa-film"></i> Movies</button>
+                        <button class="tab-btn" onclick="switchTab('trains', this)"><i class="fas fa-train"></i> Trains</button>
+                        <button class="tab-btn" onclick="switchTab('flights', this)"><i class="fas fa-plane"></i> Flights</button>
+                        <button class="tab-btn" onclick="switchTab('buses', this)"><i class="fas fa-bus"></i> Buses</button>
+                        <button class="tab-btn" onclick="switchTab('events', this)"><i class="fas fa-music"></i> Events</button>
+                        <button class="tab-btn" onclick="switchTab('hotels', this)"><i class="fas fa-hotel"></i> Hotels</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container">
+                <!-- MOVIES SECTION -->
+                <section>
+                    <h2><i class="fas fa-film"></i> Now Playing</h2>
+
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <button class="btn btn-primary btn-sm" style="border-radius: 20px; padding: 5px 15px;" onclick="filterMovies('All', this)">All</button>
+                        <button class="btn btn-outline btn-sm" style="border-radius: 20px; padding: 5px 15px;" onclick="filterMovies('Hindi', this)">Hindi</button>
+                        <button class="btn btn-outline btn-sm" style="border-radius: 20px; padding: 5px 15px;" onclick="filterMovies('Telugu', this)">Telugu</button>
+                        <button class="btn btn-outline btn-sm" style="border-radius: 20px; padding: 5px 15px;" onclick="filterMovies('Tamil', this)">Tamil</button>
+                        <button class="btn btn-outline btn-sm" style="border-radius: 20px; padding: 5px 15px;" onclick="filterMovies('IMAX', this)">IMAX</button>
+                        <button class="btn btn-outline btn-sm" style="border-radius: 20px; padding: 5px 15px;" onclick="filterMovies('3D', this)">3D</button>
+                    </div>
+
+                    <div class="grid grid-4" id="moviesGrid"></div>
+                </section>
+
+                <!-- TRAINS SECTION -->
+                <section style="display: none;" id="trainsSection">
+                    <div class="professional-search" style="background: rgba(20,20,30,0.8); padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 30px; display: flex; gap: 15px; flex-wrap: wrap; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:5px;">FROM</label>
+                            <input type="text" placeholder="Leaving from..." style="width:100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white;">
+                        </div>
+                        <div style="display:flex; align-items:center; justify-content:center; padding-top:20px;">
+                            <i class="fas fa-exchange-alt" style="color:var(--primary); font-size: 20px;"></i>
+                        </div>
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:5px;">TO</label>
+                            <input type="text" placeholder="Going to..." style="width:100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white;">
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:5px;">DATE</label>
+                            <input type="date" style="width:100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white;">
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:5px;">CLASS</label>
+                            <select style="width:100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white;">
+                                <option>All Classes</option>
+                                <option>Sleeper (SL)</option>
+                                <option>Third AC (3A)</option>
+                                <option>Second AC (2A)</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; align-items:flex-end;">
+                            <button class="btn btn-primary" style="padding: 12px 25px;"><i class="fas fa-search"></i> Search Trains</button>
+                        </div>
+                    </div>
+                    <h2><i class="fas fa-train"></i> Train Bookings</h2>
+                    <div class="grid grid-3" id="trainsGrid"></div>
+                </section>
+
+                <!-- FLIGHTS SECTION -->
+                <section>
+                    <h2><i class="fas fa-plane"></i> Flight Bookings</h2>
+                    <div class="grid grid-3" id="flightsGrid"></div>
+                </section>
+
+                <!-- BUSES SECTION -->
+                <section style="display: none;" id="busesSection">
+                    <div class="professional-search" style="background: rgba(20,20,30,0.8); padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 30px; display: flex; gap: 15px; flex-wrap: wrap; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:5px;">FROM</label>
+                            <input type="text" placeholder="Leaving from..." style="width:100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white;">
+                        </div>
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:5px;">TO</label>
+                            <input type="text" placeholder="Going to..." style="width:100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white;">
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:5px;">DATE OF JOURNEY</label>
+                            <input type="date" style="width:100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white;">
+                        </div>
+                        <div style="display:flex; align-items:flex-end;">
+                            <button class="btn btn-primary" style="padding: 12px 25px;"><i class="fas fa-search"></i> Search Buses</button>
+                        </div>
+                    </div>
+                    <h2><i class="fas fa-bus"></i> Bus Bookings</h2>
+                    <div class="grid grid-3" id="busesGrid"></div>
+                </section>
+
+                <!-- EVENTS SECTION -->
+                <section>
+                    <h2><i class="fas fa-music"></i> Events & Shows</h2>
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-primary btn-sm" style="border-radius: 20px;">All</button>
+                        <button class="btn btn-outline btn-sm" style="border-radius: 20px;">Concerts</button>
+                        <button class="btn btn-outline btn-sm" style="border-radius: 20px;">Tech</button>
+                        <button class="btn btn-outline btn-sm" style="border-radius: 20px;">Festivals</button>
+                    </div>
+                    <div class="grid grid-3" id="eventsGrid"></div>
+                </section>
+
+                <!-- HOTELS SECTION -->
+                <section style="display: none;" id="hotelsSection">
+                    <div class="professional-search" style="background: rgba(20,20,30,0.8); padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 30px; display: flex; gap: 15px; flex-wrap: wrap; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                        <div style="flex: 2; min-width: 200px;">
+                            <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:5px;">LOCATION</label>
+                            <input type="text" placeholder="City, Property Name..." style="width:100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white;">
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:5px;">CHECK-IN</label>
+                            <input type="date" style="width:100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white;">
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:5px;">CHECK-OUT</label>
+                            <input type="date" style="width:100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white;">
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:5px;">GUESTS</label>
+                            <select style="width:100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white;">
+                                <option>1 Room, 2 Adults</option>
+                                <option>1 Room, 1 Adult</option>
+                                <option>2 Rooms, 4 Adults</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; align-items:flex-end;">
+                            <button class="btn btn-primary" style="padding: 12px 25px;"><i class="fas fa-search"></i> Search Hotels</button>
+                        </div>
+                    </div>
+                    <h2><i class="fas fa-hotel"></i> Luxury Stays</h2>
+                    <div class="grid grid-3" id="hotelsGrid"></div>
+                </section>
+
+                <!-- OFFERS SECTION -->
+                <section id="offersSection">
+                    <h2><i class="fas fa-tags"></i> Exclusive Offers</h2>
+                    <div class="grid grid-3">
+                        <div class="offer-card">
+                            <h3>Welcome Bonus</h3>
+                            <p style="color: #a0a0b0; margin: 10px 0;">Get 10% off on your first booking!</p>
+                            <div class="offer-code">WELCOME10</div>
+                            <p style="font-size: 12px; color: #666;">Valid for all users</p>
+                        </div>
+                        <div class="offer-card">
+                            <h3>Mega Saver</h3>
+                            <p style="color: #a0a0b0; margin: 10px 0;">Flat ₹500 off on flights & hotels!</p>
+                            <div class="offer-code">FLAT500</div>
+                            <p style="font-size: 12px; color: #666;">Min booking ₹5000</p>
+                        </div>
+                        <div class="offer-card">
+                            <h3>Weekend Deal</h3>
+                            <p style="color: #a0a0b0; margin: 10px 0;">Save 20% on events and movies!</p>
+                            <div class="offer-code">SAVE20</div>
+                            <p style="font-size: 12px; color: #666;">Valid till Sunday</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </section>
+
+        <!-- BROWSE SECTION -->
+        <section id="browseSection" class="light hidden">
+            <div class="container">
+                <h2><i class="fas fa-search"></i> Browse All Tickets</h2>
+                <div class="grid grid-4" id="browseGrid"></div>
+            </div>
+        </section>
+
+        <!-- DASHBOARD SECTION -->
+        <section id="dashboardSection" class="light hidden">
+            <div class="container">
+                <h2><i class="fas fa-chart-line"></i> Analytics Dashboard</h2>
+                
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalBookings">0</div>
+                        <div class="stat-label"><i class="fas fa-ticket-alt"></i> Total Tickets Booked</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalSpent">₹0</div>
+                        <div class="stat-label"><i class="fas fa-wallet"></i> Total Spent</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="walletBalance">₹0</div>
+                        <div class="stat-label"><i class="fas fa-piggy-bank"></i> Wallet Balance</div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(20,20,30,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 25px; margin-top: 30px;">
+                    <h3><i class="fas fa-history"></i> Recent Activity</h3>
+                    <div id="recentActivityList"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BOOKINGS SECTION -->
+        <section id="bookingsSection" class="light hidden">
+            <div class="container">
+                <h2><i class="fas fa-ticket-alt"></i> My Bookings</h2>
+                <div id="bookingsList"></div>
+                <div id="noBookingsMsg" class="text-center mt-30" style="display:none; margin-top:50px;">
+                    <i class="fas fa-box-open" style="font-size:40px; color:var(--text-muted); margin-bottom:15px;"></i>
+                    <p style="font-size: 16px; color: #999;">No bookings yet. <a href="#" onclick="goHome(); return false;" style="color: var(--primary); font-weight: 600;">Start booking now!</a></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROFILE SECTION -->
+        <section id="profileSection" class="light hidden">
+            <div class="container">
+                <h2><i class="fas fa-user-circle"></i> My Profile</h2>
+                <div class="profile-card" style="position:relative;">
+                    <div class="profile-header">
+                        <div class="profile-avatar" id="profileAvatarDisplay" style="background-size:cover; background-position:center;"><i class="fas fa-user" id="profileAvatarIcon"></i></div>
+                        <div class="profile-name" id="profileName">User Name</div>
+                        <div class="profile-email" id="profileEmail">user@example.com</div>
+                    </div>
+
+                    <!-- PROFILE VIEW -->
+                    <div id="profileView">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <p id="viewEmail" style="padding: 12px; color: #ccc; border-bottom:1px solid rgba(255,255,255,0.1);"></p>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <p id="viewPhone" style="padding: 12px; color: #ccc; border-bottom:1px solid rgba(255,255,255,0.1);"></p>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px;">
+                            <button class="btn btn-primary" onclick="toggleEditProfile()"><i class="fas fa-edit"></i> Edit Profile</button>
+                            <button class="btn btn-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                        </div>
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button class="btn btn-outline" style="border-color: var(--danger); color: var(--danger);" onclick="deleteAccount()"><i class="fas fa-trash-alt"></i> Delete Account</button>
+                        </div>
+                    </div>
+
+                    <!-- EDIT PROFILE FORM -->
+                    <div id="editProfileForm" style="display: none;">
+                        <h3 style="margin-bottom: 20px;">Edit Profile</h3>
+                        
+                        <div class="form-group text-center">
+                            <label style="display:block; margin-bottom:10px;">Profile Picture</label>
+                            <input type="file" id="profileImageInput" accept="image/*" style="display:none;" onchange="previewProfileImage(event)">
+                            <div id="imagePreview" onclick="document.getElementById('profileImageInput').click()" style="width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.1); margin:0 auto 10px auto; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; border:2px dashed var(--primary);">
+                                <i class="fas fa-camera" style="font-size:30px; color:var(--text-muted);" id="imagePreviewIcon"></i>
+                            </div>
+                            <span style="font-size:12px; color:var(--text-muted);">Click to upload</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Full Name</label>
+                            <input type="text" id="editName" placeholder="Enter your full name">
+                        </div>
+
+                        <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                            <div class="form-group">
+                                <label><i class="fas fa-envelope"></i> Email</label>
+                                <input type="email" id="editEmail" placeholder="Enter your email" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-phone"></i> Phone</label>
+                                <input type="tel" id="editPhone" placeholder="Enter your phone">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top:20px;">
+                            <button class="btn btn-danger" onclick="toggleEditProfile()"><i class="fas fa-times"></i> Cancel</button>
+                            <button class="btn btn-primary" onclick="saveProfile()"><i class="fas fa-save"></i> Save Changes</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-cog"></i> Settings</h2>
+                <button class="modal-close" onclick="closeModal('settingsModal')">×</button>
+            </div>
+            
+            <div class="form-group">
+                <label>Theme Mode</label>
+                <select id="themeSelect" onchange="applyPreferences()" style="width:100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white;">
+                    <option value="dark">🌙 Dark Mode</option>
+                    <option value="light">☀️ Light Mode</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Accent Color</label>
+                <div style="display: flex; gap: 15px; margin-top: 10px;">
+                    <div class="color-swatch" onclick="setAccentColor('#00f3ff')" style="width:40px; height:40px; border-radius:50%; background:#00f3ff; cursor:pointer; box-shadow:0 0 10px #00f3ff;"></div>
+                    <div class="color-swatch" onclick="setAccentColor('#bc13fe')" style="width:40px; height:40px; border-radius:50%; background:#bc13fe; cursor:pointer;"></div>
+                    <div class="color-swatch" onclick="setAccentColor('#00ff88')" style="width:40px; height:40px; border-radius:50%; background:#00ff88; cursor:pointer;"></div>
+                    <div class="color-swatch" onclick="setAccentColor('#ff0055')" style="width:40px; height:40px; border-radius:50%; background:#ff0055; cursor:pointer;"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Font Size</label>
+                <select id="fontSelect" onchange="applyPreferences()" style="width:100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: white;">
+                    <option value="small">Small</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="large">Large</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:15px; border-radius:8px;">
+                <label style="margin:0;">Push Notifications</label>
+                <input type="checkbox" id="notifToggle" style="width:20px; height:20px; accent-color:var(--primary);" checked>
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="closeModal('settingsModal'); showNotification('Settings Saved!', 'success')">Save Settings</button>
+        </div>
+    </div>
+
+    <!-- HELP MODAL -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content" style="max-width:600px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-question-circle"></i> Help & Support</h2>
+                <button class="modal-close" onclick="closeModal('helpModal')">×</button>
+            </div>
+            
+            <div style="margin-bottom:20px;">
+                <h3 style="margin-bottom:10px;">Frequently Asked Questions</h3>
+                <details style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:15px; margin-bottom:10px;">
+                    <summary style="cursor:pointer; font-weight:bold; outline:none;">How do I cancel a booking?</summary>
+                    <p style="margin-top:10px; color:var(--text-muted); font-size:14px;">Go to My Bookings, click on the specific booking, and click the cancel button. Note: Cancellations are subject to terms.</p>
+                </details>
+                <details style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:15px; margin-bottom:10px;">
+                    <summary style="cursor:pointer; font-weight:bold; outline:none;">Where are my tickets?</summary>
+                    <p style="margin-top:10px; color:var(--text-muted); font-size:14px;">Tickets are stored in the My Bookings section and also emailed to your registered address.</p>
+                </details>
+                <details style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:15px; margin-bottom:10px;">
+                    <summary style="cursor:pointer; font-weight:bold; outline:none;">What payment methods are supported?</summary>
+                    <p style="margin-top:10px; color:var(--text-muted); font-size:14px;">We support Credit/Debit Cards, UPI, Google Pay, Paytm, and UPI Scanner.</p>
+                </details>
+                <details style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:15px; margin-bottom:10px;">
+                    <summary style="cursor:pointer; font-weight:bold; outline:none;">How do I add money to my wallet?</summary>
+                    <p style="margin-top:10px; color:var(--text-muted); font-size:14px;">Go to your Profile page and click "Add Money" to top up your wallet balance.</p>
+                </details>
+            </div>
+
+            <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:20px;">
+                <h3 style="margin-bottom:15px;"><i class="fas fa-robot" style="color:var(--primary);"></i> Ask AI Support (Powered by Gemini)</h3>
+                <div id="helpAiChat" style="max-height:200px; overflow-y:auto; background:rgba(0,0,0,0.3); border-radius:8px; padding:15px; margin-bottom:15px; min-height:60px;">
+                    <p style="color:var(--text-muted); font-size:13px;"><i class="fas fa-info-circle"></i> Ask me anything about TicketX Pro — bookings, payments, cancellations, and more!</p>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="helpAiInput" placeholder="Type your question..." onkeydown="if(event.key==='Enter')sendHelpAiQuery()" style="flex:1; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.5); color:white; font-family:'Outfit',sans-serif;">
+                    <button class="btn btn-primary" onclick="sendHelpAiQuery()" style="padding:12px 20px;"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABOUT MODAL -->
+    <div id="aboutModal" class="modal">
+        <div class="modal-content" style="text-align:center;">
+            <div class="modal-header" style="justify-content:center; border-bottom:none; position:relative;">
+                <button class="modal-close" onclick="closeModal('aboutModal')" style="position:absolute; right:0; top:0;">×</button>
+            </div>
+            <i class="fas fa-ticket-alt" style="font-size:60px; color:var(--primary); margin-bottom:20px; filter:drop-shadow(0 0 15px rgba(0,243,255,0.5));"></i>
+            <h1 style="margin-bottom:5px;">TicketX Pro</h1>
+            <p style="color:var(--primary); font-weight:bold; margin-bottom:20px;">Version 1.0.0</p>
+            <p style="color:var(--text-muted); font-size:14px; line-height:1.6; margin-bottom:20px;">
+                The ultimate cinematic and premium ticket booking platform.<br>
+                Experience seamless booking for Movies, Hotels, Flights, Trains, and Events all in one beautiful dark-themed environment.
+            </p>
+            <div style="background: rgba(0, 243, 255, 0.05); border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: left;">
+                <h3 style="color: white; margin-bottom: 10px; font-size: 16px;"><i class="fas fa-code" style="color: var(--primary);"></i> Developed By</h3>
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 5px;"><strong>Lead Developer:</strong> Ashu & Team Dynamic</p>
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;"><strong>Team Members:</strong> Santhosi, Thahir, Ramana, Sujana</p>
+                <div style="height: 1px; background: rgba(255, 255, 255, 0.1); margin-bottom: 15px;"></div>
+                <p style="color: var(--primary); font-size: 14px; font-weight: 600; text-align: center; margin: 0;">❤️ Thank you for choosing TicketX Pro!</p>
+            </div>
+            <div style="display:flex; justify-content:center; gap:15px; margin-bottom:20px;">
+                <a href="#" style="color:white; font-size:24px;"><i class="fab fa-twitter"></i></a>
+                <a href="#" style="color:white; font-size:24px;"><i class="fab fa-instagram"></i></a>
+                <a href="#" style="color:white; font-size:24px;"><i class="fab fa-github"></i></a>
+            </div>
+            <p style="font-size:12px; color:#666;">© 2026 TicketX Pro. All rights reserved.</p>
+        </div>
+    </div>
+
+    <!-- AUTH MODAL -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-lock"></i> Login / Sign Up</h2>
+                <button class="modal-close" onclick="closeModal('authModal')">×</button>
+            </div>
+
+            <div id="loginForm">
+                <h3 style="margin-bottom: 20px;">Welcome Back!</h3>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-info-circle"></i> Demo Accounts:</label>
+                    <p style="font-size: 12px; color: #666; margin: 10px 0; padding: 10px; background: var(--light); border-radius: 6px;">
+                        📧 <strong>demo@ticketx.com</strong> / 🔑 <strong>Demo123!</strong><br>
+                        📧 <strong>test@ticketx.com</strong> / 🔑 <strong>Test123!</strong>
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email" value="demo@ticketx.com">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-key"></i> Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" value="Demo123!">
+                </div>
+
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="login()"><i class="fas fa-sign-in-alt"></i> Login Now</button>
+                <button class="btn btn-outline" style="width: 100%;" onclick="switchForm()"><i class="fas fa-user-plus"></i> Create New Account</button>
+            </div>
+
+            <div id="signupForm" style="display: none;">
+                <h3 style="margin-bottom: 20px;">Create Your Account</h3>
+
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="signupEmail" placeholder="Enter your email">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Full Name</label>
+                    <input type="text" id="signupName" placeholder="Enter your full name">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-phone"></i> Phone</label>
+                    <input type="tel" id="signupPhone" placeholder="Enter your phone">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="signupPassword" placeholder="Min 6 characters">
+                </div>
+
+                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;" onclick="signup()"><i class="fas fa-user-check"></i> Create Account</button>
+                <button class="btn btn-outline" style="width: 100%;" onclick="switchForm()"><i class="fas fa-arrow-left"></i> Back to Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOCATION MODAL -->
+    <div id="locationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-map-marker-alt"></i> Select Your City</h2>
+                <button class="modal-close" onclick="closeModal('locationModal')">×</button>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Choose a city to see events and venues nearby.</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <button class="btn btn-outline" onclick="selectLocation('Mumbai')" style="padding:15px; font-size:16px;">Mumbai</button>
+                <button class="btn btn-outline" onclick="selectLocation('Delhi')" style="padding:15px; font-size:16px;">Delhi</button>
+                <button class="btn btn-outline" onclick="selectLocation('Bengaluru')" style="padding:15px; font-size:16px;">Bengaluru</button>
+                <button class="btn btn-outline" onclick="selectLocation('Hyderabad')" style="padding:15px; font-size:16px;">Hyderabad</button>
+                <button class="btn btn-outline" onclick="selectLocation('Chennai')" style="padding:15px; font-size:16px;">Chennai</button>
+                <button class="btn btn-outline" onclick="selectLocation('Pune')" style="padding:15px; font-size:16px;">Pune</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOOKING MODAL -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2><i class="fas fa-bookmark"></i> Book Now</h2>
+                <button class="modal-close" onclick="closeModal('bookingModal')">×</button>
+            </div>
+
+            <div id="bookingDetails"></div>
+
+            <!-- SEAT SELECTION -->
+            <div id="seatSelectionDiv" style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 15px; font-weight: 600;">
+                    <i class="fas fa-chair"></i> Select Your Seats
+                </label>
+                <div class="seat-legend">
+                    <div class="seat-legend-item">
+                        <div class="seat-legend-box available"></div>
+                        <span>Available</span>
+                    </div>
+                    <div class="seat-legend-item">
+                        <div class="seat-legend-box selected"></div>
+                        <span>Selected</span>
+                    </div>
+                    <div class="seat-legend-item">
+                        <div class="seat-legend-box reserved"></div>
+                        <span>Reserved</span>
+                    </div>
+                </div>
+                <div class="seat-grid" id="seatGrid"></div>
+                <p style="text-align: center; font-size: 14px; color: #666; margin-top: 10px;">
+                    Selected Seats: <strong id="selectedSeatsCount">0</strong>
+                </p>
+            </div>
+
+            <!-- QUANTITY -->
+            <div class="form-group">
+                <label><i class="fas fa-boxes"></i> Number of Tickets</label>
+                <input type="number" id="quantity" value="1" min="1" max="10" onchange="updateSeatCount()">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="btn btn-danger" onclick="closeModal('bookingModal')"><i class="fas fa-times"></i> Cancel</button>
+                <button class="btn btn-primary" onclick="addToCart()"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- MOVIE DETAILS MODAL -->
+    <div id="movieDetailsModal" class="modal">
+        <div class="modal-content modal-lg" style="padding:0; overflow:hidden;">
+            <div style="position:relative; height:400px; display:flex; align-items:flex-end;">
+                <div id="movieDetailsBg" style="position:absolute; inset:0; background-size:cover; background-position:center; filter:blur(10px) brightness(0.3); transform:scale(1.1);"></div>
+                <button class="modal-close" onclick="closeModal('movieDetailsModal')" style="position:absolute; top:20px; right:20px; z-index:10; background:rgba(0,0,0,0.5); border-radius:50%; width:40px; height:40px; color:white; border:none; cursor:pointer;">&times;</button>
+                <div style="position:relative; z-index:5; padding:40px; display:flex; gap:30px; width:100%; background:linear-gradient(transparent, #0f0f1a 90%);">
+                    <img id="movieDetailsPoster" src="" style="width:200px; height:300px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.8); object-fit:cover;">
+                    <div style="color:white; align-self:flex-end; padding-bottom:10px;">
+                        <h1 id="movieDetailsTitle" style="margin:0 0 10px 0; font-size:42px; text-shadow:0 2px 10px rgba(0,0,0,0.5);">Title</h1>
+                        <p style="margin:0 0 15px 0; font-size:18px; color:var(--primary);">
+                            <span id="movieDetailsRating">⭐⭐⭐⭐</span>
+                        </p>
+                        <div style="display:flex; gap:10px; margin-bottom:20px;">
+                            <span style="background:rgba(255,255,255,0.1); padding:5px 12px; border-radius:20px; font-size:12px;" id="movieDetailsLanguages">Languages</span>
+                            <span style="background:rgba(255,255,255,0.1); padding:5px 12px; border-radius:20px; font-size:12px;" id="movieDetailsFormats">Formats</span>
+                            <span style="background:rgba(255,255,255,0.1); padding:5px 12px; border-radius:20px; font-size:12px;">2h 45m</span>
+                        </div>
+                        <button id="btnBookMovie" class="btn btn-primary" style="padding:12px 40px; font-size:18px; border-radius:30px; box-shadow:0 0 20px rgba(0, 243, 255, 0.4);">Book Tickets</button>
+                    </div>
+                </div>
+            </div>
+            <div style="padding:40px; background:#0f0f1a;">
+                <h3 style="color:white; margin-bottom:15px;">About the Movie</h3>
+                <p style="color:var(--text-muted); line-height:1.6;">An epic saga spanning generations, capturing the essence of human spirit against insurmountable odds. Experience breathtaking visuals and heart-pounding action in the most anticipated movie of the year.</p>
+                <h3 style="color:white; margin-top:30px; margin-bottom:15px;">Cast & Crew</h3>
+                <div style="display:flex; gap:20px; overflow-x:auto; padding-bottom:20px;">
+                    <div style="text-align:center;"><div style="width:80px; height:80px; border-radius:50%; background:#222; margin-bottom:10px; overflow:hidden;"><img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&q=80" style="width:100%;height:100%;object-fit:cover;"></div><p style="margin:0; font-size:12px; color:white;">Lead Actor</p></div>
+                    <div style="text-align:center;"><div style="width:80px; height:80px; border-radius:50%; background:#222; margin-bottom:10px; overflow:hidden;"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80" style="width:100%;height:100%;object-fit:cover;"></div><p style="margin:0; font-size:12px; color:white;">Lead Actress</p></div>
+                    <div style="text-align:center;"><div style="width:80px; height:80px; border-radius:50%; background:#222; margin-bottom:10px; overflow:hidden;"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" style="width:100%;height:100%;object-fit:cover;"></div><p style="margin:0; font-size:12px; color:white;">Director</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- THEATRES MODAL -->
+    <div id="theatresModal" class="modal">
+        <div class="modal-content modal-lg">
+            <button class="modal-close" onclick="closeModal('theatresModal')">&times;</button>
+            <h2 id="theatresMovieTitle" style="margin-bottom: 20px;">Select Theatre</h2>
+            <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                <input type="date" id="districtDate" class="form-group" style="margin:0; width:auto; background:var(--light); border:1px solid rgba(255,255,255,0.1); color:white; padding:10px; border-radius:8px;" value="2026-05-08">
+                <select style="background:var(--light); border:1px solid rgba(255,255,255,0.1); color:white; padding:10px; border-radius:8px;">
+                    <option>Filter by format</option>
+                    <option>2D</option>
+                    <option>3D</option>
+                    <option>IMAX</option>
+                </select>
+            </div>
+            <div id="theatresList" style="max-height: 60vh; overflow-y: auto; padding-right: 10px;"></div>
+        </div>
+    </div>
+
+    <!-- DISTRICT SEAT SELECTION MODAL -->
+    <div id="districtSeatModal" class="modal">
+        <div class="modal-content modal-lg">
+            <button class="modal-close" onclick="closeModal('districtSeatModal')">&times;</button>
+            <div id="districtSeatInfo" style="text-align: center; margin-bottom: 20px;">
+                <h3>Theatre Name</h3>
+                <p>Location | Time</p>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.5); padding: 30px; border-radius: 12px; margin-bottom: 20px; overflow-x: auto;">
+                <div id="districtSeatGrid"></div>
+                <div style="text-align: center; margin-top: 40px;">
+                    <div style="width: 80%; height: 5px; background: rgba(0, 243, 255, 0.5); margin: 0 auto; border-radius: 5px; box-shadow: 0 0 15px rgba(0, 243, 255, 0.5);"></div>
+                    <p style="color: var(--text-muted); font-size: 12px; margin-top: 10px;">SCREEN THIS WAY</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                <div style="display:flex; justify-content:center; gap:20px; margin-bottom:20px;">
+                    <div style="display:flex; align-items:center; gap:5px;"><div style="width:15px; height:15px; background:#00b894; border-radius:3px;"></div> <span style="font-size:12px; color:var(--text-muted);">Available</span></div>
+                    <div style="display:flex; align-items:center; gap:5px;"><div style="width:15px; height:15px; background:#fdcb6e; border-radius:3px;"></div> <span style="font-size:12px; color:var(--text-muted);">Selected</span></div>
+                    <div style="display:flex; align-items:center; gap:5px;"><div style="width:15px; height:15px; background:#d63031; border-radius:3px;"></div> <span style="font-size:12px; color:var(--text-muted);">Booked</span></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:15px 20px; border-radius:12px;">
+                    <div style="text-align:left;">
+                        <p style="margin:0; font-size:12px; color:var(--text-muted);">Total Amount</p>
+                        <h2 style="margin:0; color:white;">₹<span id="districtLivePrice">0</span></h2>
+                    </div>
+                    <button id="districtProceedBtn" class="btn btn-primary" onclick="proceedDistrictBooking()" disabled style="opacity:0.5;">Select Seats to Proceed</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- HOTEL DETAILS MODAL -->
+    <div id="hotelDetailsModal" class="modal">
+        <div class="modal-content modal-lg" style="padding:0; overflow:hidden;">
+            <div style="position:relative; height:300px; display:flex; align-items:flex-end;">
+                <div id="hotelDetailsBg" style="position:absolute; inset:0; background-size:cover; background-position:center; filter:brightness(0.5);"></div>
+                <button class="modal-close" onclick="closeModal('hotelDetailsModal')" style="position:absolute; top:20px; right:20px; z-index:10; background:rgba(0,0,0,0.5); border-radius:50%; width:40px; height:40px; color:white; border:none; cursor:pointer;">&times;</button>
+                <div style="position:relative; z-index:5; padding:30px; width:100%; background:linear-gradient(transparent, #0f0f1a 90%);">
+                    <h1 id="hotelDetailsTitle" style="margin:0 0 5px 0; font-size:36px; text-shadow:0 2px 10px rgba(0,0,0,0.5); color:white;">Hotel Name</h1>
+                    <p id="hotelDetailsLocation" style="margin:0 0 10px 0; font-size:16px; color:#ccc;">Location</p>
+                    <p style="margin:0; font-size:16px; color:var(--primary);" id="hotelDetailsRating">Rating</p>
+                </div>
+            </div>
+            <div style="padding:30px; background:#0f0f1a; max-height:60vh; overflow-y:auto;">
+                <h3 style="color:white; margin-bottom:10px;">About</h3>
+                <p id="hotelDetailsDesc" style="color:var(--text-muted); line-height:1.6; margin-bottom:20px;">Description</p>
+                
+                <h3 style="color:white; margin-bottom:15px;">Amenities</h3>
+                <div id="hotelDetailsAmenities" style="display:flex; gap:10px; margin-bottom:30px; flex-wrap:wrap;"></div>
+
+                <h3 style="color:white; margin-bottom:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:20px;">Select a Room</h3>
+                <div id="hotelRoomsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HOTEL BOOKING SUMMARY MODAL -->
+    <div id="hotelBookingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-calendar-check"></i> Book Room</h2>
+                <button class="modal-close" onclick="closeModal('hotelBookingModal')">×</button>
+            </div>
+            
+            <div style="background: rgba(20,20,30,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                <h4 id="bookingHotelName" style="margin:0 0 5px 0; color:white;">Hotel Name</h4>
+                <p id="bookingRoomName" style="margin:0; color:var(--primary); font-size:14px;">Room Type</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div class="form-group" style="margin:0;">
+                    <label>Check-in Date</label>
+                    <input type="date" id="hotelCheckIn" value="2026-05-10" onchange="calculateHotelPrice()">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Check-out Date</label>
+                    <input type="date" id="hotelCheckOut" value="2026-05-12" onchange="calculateHotelPrice()">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Guests</label>
+                <select id="hotelGuests" onchange="calculateHotelPrice()" style="width:100%; padding:10px; background:var(--light); border:1px solid rgba(255,255,255,0.1); color:white; border-radius:6px;">
+                    <option value="1">1 Adult</option>
+                    <option value="2" selected>2 Adults</option>
+                    <option value="3">2 Adults, 1 Child</option>
+                    <option value="4">4 Adults (2 Rooms)</option>
+                </select>
+            </div>
+
+            <div style="background:rgba(0,0,0,0.3); padding:20px; border-radius:12px; margin-top:20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; color:#ccc; font-size:14px;">
+                    <span id="hotelCalculationText">₹0 x 0 Nights</span>
+                    <span id="hotelSubtotal">₹0</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:15px; color:#ccc; font-size:14px;">
+                    <span>Taxes & Fees (10%)</span>
+                    <span id="hotelTaxes">₹0</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
+                    <span style="font-weight:bold; color:white;">Total Amount</span>
+                    <h2 style="margin:0; color:var(--primary);">₹<span id="hotelTotalPrice">0</span></h2>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%; margin-top: 20px; padding: 12px; font-size: 16px;" onclick="confirmHotelBooking()">Confirm Booking</button>
+        </div>
+    </div>
+
+    <!-- CHECKOUT MODAL -->
+    <div id="checkoutModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2><i class="fas fa-credit-card"></i> Checkout</h2>
+                <button class="modal-close" onclick="closeModal('checkoutModal')">×</button>
+            </div>
+
+            <h3 style="margin-bottom: 15px;"><i class="fas fa-receipt"></i> Order Summary</h3>
+            <div id="cartSummary" style="background: var(--light); padding: 15px; border-radius: 8px; margin-bottom: 20px;"></div>
+
+            <h3 style="margin-bottom: 15px;"><i class="fas fa-credit-card"></i> Payment Method</h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px;">
+                <button class="btn" style="background: linear-gradient(135deg, #1e90ff, #764ba2); color: white;" id="paymentMethod1" onclick="selectPaymentMethod('card', this)">
+                    <i class="fas fa-credit-card"></i><br>Card
+                </button>
+                <button class="btn btn-outline" id="paymentMethod2" onclick="selectPaymentMethod('upi', this)">
+                    <i class="fas fa-wallet"></i><br>UPI
+                </button>
+                <button class="btn btn-outline" id="paymentMethod3" onclick="selectPaymentMethod('googlepay', this)">
+                    <i class="fab fa-google"></i><br>Google Pay
+                </button>
+                <button class="btn btn-outline" id="paymentMethod4" onclick="selectPaymentMethod('paytm', this)">
+                    <i class="fas fa-mobile"></i><br>Paytm
+                </button>
+                <button class="btn btn-outline" id="paymentMethod5" onclick="selectPaymentMethod('scanner', this)">
+                    <i class="fas fa-qrcode"></i><br>UPI Scan
+                </button>
+            </div>
+            
+            <div id="paymentDetails" style="background: var(--light); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <div id="cardPayment">
+                    <div class="form-group">
+                        <label>Card Number</label>
+                        <input type="text" placeholder="4111 1111 1111 1111" value="4111111111111111" maxlength="16">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <input type="text" placeholder="MM/YY" value="12/25" maxlength="5">
+                        </div>
+                        <div class="form-group">
+                            <label>CVV</label>
+                            <input type="text" placeholder="123" value="123" maxlength="3">
+                        </div>
+                    </div>
+                </div>
+                <div id="upiPayment" style="display: none;">
+                    <div class="form-group">
+                        <label>UPI ID</label>
+                        <input type="text" placeholder="username@bankname" value="demo@okhdfcbank">
+                    </div>
+                    <p style="font-size: 12px; color: #666; margin-top: 10px;">Enter your UPI ID (e.g., name@upiapp)</p>
+                </div>
+                <div id="googlePayPayment" style="display: none;">
+                    <div style="text-align: center; padding: 20px;">
+                        <i class="fab fa-google" style="font-size: 40px; color: #4285f4;"></i>
+                        <p style="margin-top: 10px; font-weight: 600;">Google Pay</p>
+                        <p style="font-size: 12px; color: #666;">Click Pay Now to complete payment via Google Pay</p>
+                        <div style="margin-top: 10px; padding: 10px; background: #f0f7ff; border-radius: 6px; font-size: 11px; color: #666;">
+                            ✓ Secure payment with Google Pay
+                        </div>
+                    </div>
+                </div>
+                <div id="paytmPayment" style="display: none;">
+                    <div class="form-group">
+                        <label>Paytm Mobile Number</label>
+                        <input type="text" placeholder="10-digit mobile number" value="9876543210">
+                    </div>
+                    <p style="font-size: 12px; color: #666; margin-top: 10px;">Enter your registered Paytm mobile number</p>
+                </div>
+                <div id="scannerPayment" style="display: none;">
+                    <div style="text-align: center; padding: 20px; border: 2px dashed var(--primary); border-radius: 8px;">
+                        <i class="fas fa-qrcode" style="font-size: 50px; color: var(--primary);"></i>
+                        <p style="margin-top: 15px; font-weight: 600;">UPI QR Code Scanner</p>
+                        <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Point your camera at a UPI QR code</p>
+                        <button class="btn btn-primary" style="margin-top: 10px;" onclick="startUPIScanner()">
+                            <i class="fas fa-camera"></i> Open Scanner
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="btn btn-danger" onclick="clearCart(); closeModal('checkoutModal')"><i class="fas fa-trash"></i> Cancel</button>
+                <button class="btn btn-primary" onclick="processPayment()"><i class="fas fa-check-circle"></i> Pay Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIRMATION MODAL -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-check-circle"></i> Booking Confirmed!</h2>
+                <button class="modal-close" onclick="closeModal('confirmationModal')">×</button>
+            </div>
+
+            <div class="success-message">
+                <i class="fas fa-check-circle"></i>
+                <strong>Your booking has been successfully confirmed!</strong>
+            </div>
+
+            <div id="confirmationDetails" style="background: var(--light); padding: 20px; border-radius: 8px; margin-bottom: 20px;"></div>
+
+            <div class="qr-container">
+                <p style="font-weight: 600; margin-bottom: 10px;"><i class="fas fa-qrcode"></i> Your Ticket QR Code</p>
+                <img id="qrCodeImg" src="" alt="QR Code" class="qr-code" style="max-width: 200px;">
+                <div class="booking-id" id="bookingId"></div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="downloadQR()"><i class="fas fa-download"></i> Download Ticket</button>
+                <button class="btn btn-secondary" style="margin-left: 10px;" onclick="closeModal('confirmationModal'); switchView('dashboard');"><i class="fas fa-dashboard"></i> Go to Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <p><strong>&copy; 2026 TicketX Pro</strong> - Advanced Ticket Booking Platform</p>
+        <p>Book movies, trains, flights, buses & events with ease!</p>
+    </footer>
+
+    <!-- CHATBOT -->
+    <div class="chatbot">
+        <div class="chat-bubble" onclick="toggleChat()">
+            <i class="fas fa-comments"></i>
+        </div>
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <span><i class="fas fa-robot"></i> 🤖 Gemini AI Support</span>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="showAPIKeyModal()" style="background: rgba(255,255,255,0.3); border: none; color: white; cursor: pointer; font-size: 14px; padding: 4px 8px; border-radius: 4px; transition: 0.3s;" title="Update API Key"><i class="fas fa-key"></i> API</button>
+                    <button onclick="toggleChat()" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;">×</button>
+                </div>
+            </div>
+            <div class="chat-body" id="chatBody"></div>
+            <div class="chat-footer">
+                <input type="text" id="chatInput" placeholder="Ask anything..." onkeypress="handleChatInput(event)">
+                <button onclick="sendChat()"><i class="fas fa-send"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMPREHENSIVE JAVASCRIPT -->
+    <script>
+        // ============ GLOBAL STATE ============
+        const app = {
+            store: {
+                users: [
+                    { email: 'demo@ticketx.com', password: 'Demo123!', name: 'Demo User', phone: '9876543210', wallet: 10000 },
+                    { email: 'test@ticketx.com', password: 'Test123!', name: 'Test User', phone: '9876543211', wallet: 10000 }
+                ],
+                currentUser: null,
+                cart: [],
+                bookings: [],
+                currentBooking: null,
+                selectedSeats: []
+            },
+
+            
+            // Demo Data
+            data: {
+                movies: [
+                    { id: 1, name: 'Leo', image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&q=80', languages: ['Tamil', 'Telugu', 'Hindi'], formats: ['2D', 'IMAX'], price: 250, category: 'movies', rating: '⭐⭐⭐⭐⭐', seats: 48 },
+                    { id: 2, name: 'Salaar', image: 'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=400&q=80', languages: ['Telugu', 'Hindi'], formats: ['2D'], price: 300, category: 'movies', rating: '⭐⭐⭐⭐⭐', seats: 48 },
+                    { id: 3, name: 'Fighter', image: 'https://images.unsplash.com/photo-1605786419794-2e90c8f5e714?w=400&q=80', languages: ['Hindi'], formats: ['2D', '3D'], price: 250, category: 'movies', rating: '⭐⭐⭐⭐', seats: 48 },
+                    { id: 4, name: 'Dune: Part Two', image: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400&q=80', languages: ['English', 'Hindi'], formats: ['IMAX', '4DX'], price: 350, category: 'movies', rating: '⭐⭐⭐⭐⭐', seats: 48 }
+                ],
+                trains: [
+                    { id: 5, name: 'Vande Bharat Exp', image: 'https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=400&q=80', from: 'Delhi', to: 'Varanasi', price: 1500, category: 'trains', rating: '⭐⭐⭐⭐⭐', seats: 72 },
+                    { id: 6, name: 'Rajdhani Express', image: 'https://images.unsplash.com/photo-1541427468627-a89a96e5ca1d?w=400&q=80', from: 'Mumbai', to: 'Delhi', price: 2800, category: 'trains', rating: '⭐⭐⭐⭐⭐', seats: 72 },
+                    { id: 7, name: 'Shatabdi Express', image: 'https://images.unsplash.com/photo-1605806616949-1e87b487cb2a?w=400&q=80', from: 'Chennai', to: 'Bangalore', price: 1100, category: 'trains', rating: '⭐⭐⭐⭐', seats: 96 }
+                ],
+                flights: [
+                    { id: 8, name: 'Air India AI101', image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&q=80', location: 'Non-stop', price: 5000, category: 'flights', rating: '⭐⭐⭐⭐⭐', seats: 180 },
+                    { id: 9, name: 'IndiGo 6E202', image: 'https://images.unsplash.com/photo-1516738901171-8eb4fc13bd20?w=400&q=80', location: '1 Stop', price: 3500, category: 'flights', rating: '⭐⭐⭐⭐', seats: 180 },
+                    { id: 10, name: 'Vistara UK301', image: 'https://images.unsplash.com/photo-1569154941061-e231b4732ef1?w=400&q=80', location: 'Non-stop', price: 4500, category: 'flights', rating: '⭐⭐⭐⭐⭐', seats: 180 }
+                ],
+                buses: [
+                    { id: 11, name: 'IntrCity SmartBus', image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400&q=80', formats: ['AC Sleeper'], price: 1200, category: 'buses', rating: '⭐⭐⭐⭐', seats: 42 },
+                    { id: 12, name: 'Orange Travels', image: 'https://images.unsplash.com/photo-1570125909232-eb263c85f48c?w=400&q=80', formats: ['Non-AC Seater'], price: 800, category: 'buses', rating: '⭐⭐⭐', seats: 42 },
+                    { id: 13, name: 'VRL Travels', image: 'https://images.unsplash.com/photo-1464219789935-c2d9d9aba644?w=400&q=80', formats: ['Volvo Multi-Axle'], price: 1500, category: 'buses', rating: '⭐⭐⭐⭐⭐', seats: 32 }
+                ],
+                events: [
+                    { id: 14, name: 'Sunburn Arena', image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&q=80', location: 'Stadium', price: 2500, category: 'events', rating: '⭐⭐⭐⭐⭐', seats: 500 },
+                    { id: 15, name: 'IPL Final 2026', image: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=400&q=80', location: 'Cricket Ground', price: 3000, category: 'events', rating: '⭐⭐⭐⭐', seats: 1000 },
+                    { id: 16, name: 'Tech Summit', image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400&q=80', location: 'Convention Center', price: 1500, category: 'events', rating: '⭐⭐⭐⭐⭐', seats: 800 }
+                ],
+                hotels: [
+                    { 
+                        id: 17, name: 'Taj Palace', image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80', location: 'Marine Drive, Mumbai', 
+                        category: 'hotels', rating: '⭐⭐⭐⭐⭐ 4.9', 
+                        amenities: ['Free WiFi', 'Pool', 'Spa', 'Restaurant'],
+                        description: 'Experience luxury at its finest with breathtaking ocean views and world-class hospitality.',
+                        rooms: [
+                            { type: 'Standard Room', price: 15000, capacity: '2 Adults', features: '1 King Bed, City View', image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&q=80' },
+                            { type: 'Deluxe Sea View', price: 22000, capacity: '2 Adults, 1 Child', features: '1 King Bed, Ocean View, Balcony', image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&q=80' },
+                            { type: 'Presidential Suite', price: 55000, capacity: '4 Adults', features: '2 Bedrooms, Living Area, Private Pool', image: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400&q=80' }
+                        ]
+                    },
+                    { 
+                        id: 18, name: 'Marriott Resort', image: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600&q=80', location: 'Baga Beach, Goa', 
+                        category: 'hotels', rating: '⭐⭐⭐⭐⭐ 4.7', 
+                        amenities: ['Free WiFi', 'Pool', 'Beachfront', 'Bar'],
+                        description: 'A vibrant beachfront resort perfect for a relaxing getaway or exciting water sports.',
+                        rooms: [
+                            { type: 'Standard Room', price: 12000, capacity: '2 Adults', features: '1 Queen Bed, Garden View', image: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=400&q=80' },
+                            { type: 'Suite', price: 18000, capacity: '3 Adults', features: '1 King Bed, Sofa Bed, Ocean View', image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&q=80' }
+                        ]
+                    },
+                    { 
+                        id: 19, name: 'ITC Kohinoor', image: 'https://images.unsplash.com/photo-1551882547-ff40c0d1398c?w=600&q=80', location: 'Hitech City, Hyderabad', 
+                        category: 'hotels', rating: '⭐⭐⭐⭐⭐ 4.8', 
+                        amenities: ['Free WiFi', 'Gym', 'Business Center', 'Restaurant'],
+                        description: 'Premium business hotel offering ultimate comfort in the heart of the IT hub.',
+                        rooms: [
+                            { type: 'Executive Room', price: 9500, capacity: '2 Adults', features: '1 King Bed, Work Desk', image: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=400&q=80' },
+                            { type: 'Club Room', price: 14000, capacity: '2 Adults', features: '1 King Bed, Club Lounge Access', image: 'https://images.unsplash.com/photo-1598928506311-c55dd121a977?w=400&q=80' }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // ============ STORAGE FUNCTIONS ============
+        function loadStore() {
+            try {
+                const saved = localStorage.getItem('ticketxStore');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    app.store.currentUser = data.currentUser;
+                    app.store.bookings = data.bookings || [];
+                    app.store.cart = data.cart || [];
+                }
+            } catch(e) {
+                console.error('Error loading store:', e);
+            }
+        }
+
+        function saveStore() {
+            try {
+                localStorage.setItem('ticketxStore', JSON.stringify({
+                    currentUser: app.store.currentUser,
+                    bookings: app.store.bookings,
+                    cart: app.store.cart
+                }));
+            } catch(e) {
+                console.error('Error saving store:', e);
+            }
+        }
+
+        // ============ UI FUNCTIONS ============
+        function goHome() {
+            document.getElementById('homeSection').classList.remove('hidden');
+            document.getElementById('browseSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('bookingsSection').classList.add('hidden');
+            document.getElementById('profileSection').classList.add('hidden');
+            loadStore();
+            renderHome();
+        }
+
+        function switchView(view) {
+            loadStore();
+            if ((view === 'dashboard' || view === 'bookings' || view === 'profile') && !app.store.currentUser) {
+                openModal('authModal');
+                showNotification('Please login to access this section', 'info');
+                return;
+            }
+
+            document.getElementById('homeSection').classList.add('hidden');
+            document.getElementById('browseSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('bookingsSection').classList.add('hidden');
+            document.getElementById('profileSection').classList.add('hidden');
+
+            if (view === 'browse') {
+                document.getElementById('browseSection').classList.remove('hidden');
+                renderAllItems();
+            } else if (view === 'dashboard') {
+                document.getElementById('dashboardSection').classList.remove('hidden');
+                renderDashboard();
+            } else if (view === 'bookings') {
+                document.getElementById('bookingsSection').classList.remove('hidden');
+                renderBookings();
+            } else if (view === 'profile') {
+                document.getElementById('profileSection').classList.remove('hidden');
+                renderProfile();
+            }
+        }
+
+        // ============ LOCATION FUNCTIONS ============
+        function openLocationModal() {
+            openModal('locationModal');
+        }
+
+        function selectLocation(city) {
+            localStorage.setItem('userLocation', city);
+            document.getElementById('navLocationText').textContent = city;
+            showNotification('Location updated to ' + city, 'success');
+            closeModal('locationModal');
+            
+            // Re-render movies to simulate location filtering
+            renderGrid('moviesGrid', app.data.movies);
+        }
+
+        // Init location from localStorage on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedLoc = localStorage.getItem('userLocation');
+            if (savedLoc) {
+                document.getElementById('navLocationText').textContent = savedLoc;
+            }
+        });
+
+
+        function renderHome() {
+            showSkeleton('moviesGrid', 'grid');
+            showSkeleton('trainsGrid', 'list');
+            showSkeleton('flightsGrid', 'list');
+            showSkeleton('busesGrid', 'list');
+            showSkeleton('eventsGrid', 'grid');
+            showSkeleton('hotelsGrid', 'grid');
+            
+            setTimeout(() => {
+                renderGrid('moviesGrid', app.data.movies);
+                renderTrainList('trainsGrid', app.data.trains);
+                renderFlightList('flightsGrid', app.data.flights);
+                renderBusList('busesGrid', app.data.buses);
+                renderGrid('eventsGrid', app.data.events);
+                renderHotelsList('hotelsGrid', app.data.hotels);
+            }, 600);
+            updateAuthButton();
+        }
+
+        function showSkeleton(elementId, type) {
+            const grid = document.getElementById(elementId);
+            const skeletons = Array(3).fill(0).map(() => {
+                if (type === 'list') {
+                    return `<div style="background: rgba(20,20,30,0.8); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 15px; height: 120px; animation: pulse 1.5s infinite; opacity: 0.5;"></div>`;
+                }
+                return `<div class="card" style="height: 350px; animation: pulse 1.5s infinite; opacity: 0.5;"></div>`;
+            }).join('');
+            grid.innerHTML = skeletons;
+        }
+
+        function renderTrainList(elementId, items) {
+            const grid = document.getElementById(elementId);
+            grid.style.display = 'block'; // Ensure it's not grid layout
+            grid.innerHTML = items.map(item => `
+                <div class="list-row" style="background: rgba(20,20,30,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div>
+                        <h3 style="margin: 0 0 5px 0;">${item.name} <span style="font-size: 12px; color: var(--primary); border: 1px solid rgba(0,243,255,0.3); background: rgba(0,243,255,0.1); padding: 2px 6px; border-radius: 4px; margin-left: 10px;">${item.id}109</span></h3>
+                        <p style="margin: 0; color: var(--text-muted); font-size: 14px;"><i class="fas fa-train" style="color: #aaa;"></i> ${item.from} <i class="fas fa-long-arrow-alt-right" style="margin: 0 5px;"></i> ${item.to}</p>
+                        <div style="display: flex; gap: 15px; margin-top: 15px; align-items: center;">
+                            <span style="background: rgba(0,255,0,0.1); color: #0f0; padding: 4px 8px; border-radius: 4px; font-size: 12px; border: 1px solid rgba(0,255,0,0.2);">Available: ${item.seats}</span>
+                            <div style="display: flex; align-items: center; gap: 8px; font-size: 12px;">
+                                <span style="color: #ccc;">Confirm Probability:</span>
+                                <div style="width: 100px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                                    <div style="width: ${Math.floor(Math.random() * 40 + 60)}%; height: 100%; background: linear-gradient(90deg, #ff9f43, #1dd1a1);"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <h2 style="margin: 0 0 15px 0; color: var(--primary); font-size: 28px;">₹${item.price}</h2>
+                        <button class="btn btn-outline btn-sm" style="margin-right: 10px;" onclick="showNotification('PNR Status: Confirmed', 'success')">Check PNR</button>
+                        <button class="btn btn-primary btn-sm" onclick="openBooking(${item.id})">Book Seat</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        
+        function renderHotelsList(elementId, items) {
+            const grid = document.getElementById(elementId);
+            grid.style.display = 'block';
+            grid.innerHTML = items.map(item => {
+                const distance = (Math.random() * 5 + 1).toFixed(1);
+                const isPopular = Math.random() > 0.5;
+                const startingPrice = item.rooms && item.rooms[0] ? item.rooms[0].price : item.price;
+                return `
+                <div class="list-row" style="background: rgba(20,20,30,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div style="display: flex; gap: 20px; align-items: center;">
+                        <div style="position:relative;">
+                            <img src="${item.image}" style="width: 180px; height: 130px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1);">
+                            ${isPopular ? `<span style="position:absolute; top:-10px; left:-10px; background:var(--warning); color:black; font-size:10px; padding:4px 10px; border-radius:12px; font-weight:bold; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">🔥 Popular Choice</span>` : ''}
+                        </div>
+                        <div>
+                            <h3 style="margin: 0 0 5px 0; font-size: 22px; color:white;">${item.name} <span style="font-size:12px; font-weight:normal; color:var(--primary); margin-left:10px;">${item.rating}</span></h3>
+                            <p style="margin: 0 0 12px 0; color: var(--text-muted); font-size: 14px;"><i class="fas fa-map-marker-alt" style="color:var(--danger)"></i> ${item.location} <span style="color:#888;">(${distance} km away)</span></p>
+                            <div style="display: flex; gap: 8px;">
+                                ${(item.amenities || []).map(a => `<span style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:4px 10px; border-radius:6px; font-size:11px; color:#ccc;"><i class="fas fa-check" style="color:var(--secondary); margin-right:4px;"></i>${a}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align: right; min-width: 150px;">
+                        <p style="margin:0 0 5px 0; font-size:12px; color:var(--text-muted);">Starts from</p>
+                        <h2 style="margin: 0 0 15px 0; color: var(--primary); font-size: 28px;">₹${startingPrice}<span style="font-size:14px; color:#888;">/nt</span></h2>
+                        <button class="btn btn-primary btn-sm" onclick="openHotelDetails(${item.id})" style="padding: 10px 30px; font-size:14px;">View Details</button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function renderBusList(elementId, items) {
+            const grid = document.getElementById(elementId);
+            grid.style.display = 'block';
+            grid.innerHTML = items.map(item => `
+                <div class="list-row" style="background: rgba(20,20,30,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; gap: 20px; align-items: center;">
+                        <img src="${item.image}" style="width: 100px; height: 100px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1);">
+                        <div>
+                            <h3 style="margin: 0 0 8px 0; font-size: 20px;">${item.name}</h3>
+                            <p style="margin: 0; color: var(--text-muted); font-size: 14px;">${item.formats ? item.formats.join(', ') : 'AC Sleeper'}</p>
+                            <p style="margin: 8px 0 0 0; color: #ccc; font-size: 13px;"><i class="fas fa-clock" style="color: var(--secondary);"></i> Dep: 21:00 | Arr: 06:00 <span style="font-size: 11px; color: #888;">(Next Day)</span></p>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <h2 style="margin: 0 0 10px 0; color: var(--primary); font-size: 26px;">₹${item.price}</h2>
+                        <p style="margin: 0 0 15px 0; font-size: 13px; color: #1dd1a1;"><i class="fas fa-check-circle"></i> ${item.seats} Seats Left</p>
+                        <button class="btn btn-primary btn-sm" onclick="openBooking(${item.id})" style="padding: 8px 25px;">Select Seats</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderFlightList(elementId, items) {
+            const grid = document.getElementById(elementId);
+            grid.style.display = 'block';
+            grid.innerHTML = items.map(item => `
+                <div class="list-row" style="background: rgba(20,20,30,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 20px; width: 30%;">
+                        <img src="${item.image}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
+                        <div>
+                            <h3 style="margin: 0; font-size: 16px;">${item.name}</h3>
+                            <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 12px;">${item.location}</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 20px; width: 40%;">
+                        <div style="text-align: right;">
+                            <h3 style="margin: 0;">10:00</h3>
+                            <p style="margin: 0; font-size: 12px; color: #888;">DEL</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <p style="margin: 0 0 5px 0; font-size: 11px; color: #aaa;">2h 15m</p>
+                            <div style="width: 100px; height: 2px; background: rgba(255,255,255,0.2); position: relative;">
+                                <i class="fas fa-plane" style="position: absolute; top: -7px; left: 50%; transform: translateX(-50%); color: var(--primary);"></i>
+                            </div>
+                        </div>
+                        <div style="text-align: left;">
+                            <h3 style="margin: 0;">12:15</h3>
+                            <p style="margin: 0; font-size: 12px; color: #888;">BOM</p>
+                        </div>
+                    </div>
+                    <div style="text-align: right; width: 30%;">
+                        <h2 style="margin: 0 0 10px 0; color: var(--primary);">₹${item.price}</h2>
+                        <button class="btn btn-primary btn-sm" onclick="openBooking(${item.id})">Book Flight</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderGrid(elementId, items) {
+            const grid = document.getElementById(elementId);
+            grid.innerHTML = items.map(item => `
+                <div class="card">
+                    <div class="card-image">
+                        ${item.emoji}
+                        <span class="card-badge">₹${item.price}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-title">${item.name}</div>
+                        <div class="card-subtitle">
+                            <span>${item.rating}</span>
+                        </div>
+                        <div class="card-price">₹${item.price}</div>
+                        <button class="btn btn-primary btn-sm" style="width: 100%;" onclick="openBooking(${item.id})">
+                            <i class="fas fa-bookmark"></i> Book Now
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderAllItems() {
+            const allItems = [...app.data.movies, ...app.data.trains, ...app.data.flights, ...app.data.buses, ...app.data.events, ...app.data.hotels];
+            renderGrid('browseGrid', allItems);
+        }
+
+        function filterMovies(tag, btn) {
+            const buttons = btn.parentElement.querySelectorAll('button');
+            buttons.forEach(b => b.className = 'btn btn-outline btn-sm');
+            btn.className = 'btn btn-primary btn-sm';
+            
+            if (tag === 'All') {
+                renderGrid('moviesGrid', app.data.movies);
+                return;
+            }
+            const filtered = app.data.movies.filter(m => (m.languages && m.languages.includes(tag)) || (m.formats && m.formats.includes(tag)));
+            renderGrid('moviesGrid', filtered);
+        }
+
+        function handleSearch(event) {
+            const query = event.target.value.toLowerCase();
+            if (query.length < 2 && query.length > 0) return;
+            
+            if (query.length === 0) {
+                renderHome();
+                return;
+            }
+            
+            const filteredMovies = app.data.movies.filter(m => m.name.toLowerCase().includes(query) || (m.languages && m.languages.join(' ').toLowerCase().includes(query)));
+            const filteredEvents = app.data.events.filter(e => e.name.toLowerCase().includes(query) || e.location.toLowerCase().includes(query));
+            
+            renderGrid('moviesGrid', filteredMovies);
+            renderGrid('eventsGrid', filteredEvents);
+        }
+
+        function switchTab(tab, btnElement) {
+            // Update active button
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            if (btnElement) {
+                // If it's passed explicitly
+                btnElement.classList.add('active');
+            } else if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            } else if (event && event.target) {
+                // Fallback (might target the <i> tag)
+                const btn = event.target.closest('button');
+                if (btn) btn.classList.add('active');
+            }
+            
+            // Hide all sections
+            document.getElementById('moviesGrid').parentElement.style.display = 'none';
+            document.getElementById('trainsSection').style.display = 'none';
+            document.getElementById('flightsGrid').parentElement.style.display = 'none';
+            document.getElementById('busesSection').style.display = 'none';
+            document.getElementById('eventsGrid').parentElement.style.display = 'none';
+            document.getElementById('hotelsSection').style.display = 'none';
+            
+            // Show selected section
+            if (tab === 'movies') {
+                document.getElementById('moviesGrid').parentElement.style.display = 'block';
+                document.getElementById('moviesGrid').previousElementSibling.innerHTML = '<i class="fas fa-film"></i> Now Playing';
+            } else if (tab === 'trains') {
+                document.getElementById('trainsSection').style.display = 'block';
+                document.getElementById('trainsGrid').previousElementSibling.innerHTML = '<i class="fas fa-train"></i> Train Bookings';
+            } else if (tab === 'flights') {
+                document.getElementById('flightsGrid').parentElement.style.display = 'block';
+                document.getElementById('flightsGrid').previousElementSibling.innerHTML = '<i class="fas fa-plane"></i> Flight Bookings';
+            } else if (tab === 'buses') {
+                document.getElementById('busesSection').style.display = 'block';
+                document.getElementById('busesGrid').previousElementSibling.innerHTML = '<i class="fas fa-bus"></i> Bus Bookings';
+            } else if (tab === 'events') {
+                document.getElementById('eventsGrid').parentElement.style.display = 'block';
+                document.getElementById('eventsGrid').previousElementSibling.innerHTML = '<i class="fas fa-music"></i> Events & Shows';
+            } else if (tab === 'hotels') {
+                document.getElementById('hotelsSection').style.display = 'block';
+            }
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.add('show');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+
+        // ============ AUTH FUNCTIONS ============
+        function toggleAuth() {
+            loadStore();
+            if (app.store.currentUser) {
+                logout();
+            } else {
+                openModal('authModal');
+            }
+        }
+
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showNotification('❌ Please fill all fields', 'error');
+                return;
+            }
+
+            const user = app.store.users.find(u => u.email === email && u.password === password);
+            if (user) {
+                app.store.currentUser = { ...user };
+                app.store.bookings = [];
+                app.store.cart = [];
+                saveStore();
+                showNotification(`✅ Welcome back, ${user.name}!`, 'success');
+                closeModal('authModal');
+                updateAuthButton();
+                setTimeout(() => goHome(), 500);
+            } else {
+                showNotification('❌ Invalid credentials', 'error');
+            }
+        }
+
+        function signup() {
+            const email = document.getElementById('signupEmail').value;
+            const name = document.getElementById('signupName').value;
+            const phone = document.getElementById('signupPhone').value;
+            const password = document.getElementById('signupPassword').value;
+
+            if (!email || !name || !phone || password.length < 6) {
+                showNotification('❌ All fields required, password min 6 chars', 'error');
+                return;
+            }
+
+            if (app.store.users.find(u => u.email === email)) {
+                showNotification('❌ Email already exists', 'error');
+                return;
+            }
+
+            app.store.users.push({ email, password, name, phone, wallet: 5000 });
+            app.store.currentUser = { email, name, phone, wallet: 5000 };
+            app.store.bookings = [];
+            app.store.cart = [];
+            saveStore();
+            showNotification('✅ Account created successfully!', 'success');
+            closeModal('authModal');
+            updateAuthButton();
+            setTimeout(() => goHome(), 500);
+        }
+
+        function logout() {
+            showNotification('Logging out...', 'info');
+            app.store.currentUser = null;
+            app.store.cart = [];
+            saveStore();
+            updateAuthButton();
+            setTimeout(() => goHome(), 1000);
+        }
+
+        function switchForm() {
+            document.getElementById('loginForm').style.display = 
+                document.getElementById('loginForm').style.display === 'none' ? 'block' : 'none';
+            document.getElementById('signupForm').style.display = 
+                document.getElementById('signupForm').style.display === 'none' ? 'block' : 'none';
+        }
+
+        function updateAuthButton() {
+            const authBtn = document.getElementById('authBtn');
+            if (app.store.currentUser) {
+                authBtn.innerHTML = `
+                    <div class="user-dropdown" style="position: relative; cursor: pointer; padding: 5px 10px; background: rgba(0, 243, 255, 0.1); border-radius: 20px; border: 1px solid rgba(0, 243, 255, 0.3);" onclick="document.getElementById('profileMenu').classList.toggle('hidden')">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-user-circle" style="font-size: 20px; color: var(--primary);"></i>
+                            <span style="font-weight: 600;">${app.store.currentUser.name.split(' ')[0]}</span>
+                            <i class="fas fa-chevron-down" style="font-size: 10px; color: var(--text-muted);"></i>
+                        </div>
+                        <div id="profileMenu" class="hidden" style="position: absolute; right: 0; top: calc(100% + 10px); background: #0f0f1a; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; width: 160px; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.8);">
+                            <a href="#" onclick="switchView('profile'); document.getElementById('profileMenu').classList.add('hidden'); return false;" style="display: block; padding: 10px; color: white; text-decoration: none; border-radius: 8px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'"><i class="fas fa-user" style="width: 20px; color: var(--primary);"></i> Profile</a>
+                            <a href="#" onclick="switchView('dashboard'); document.getElementById('profileMenu').classList.add('hidden'); return false;" style="display: block; padding: 10px; color: white; text-decoration: none; border-radius: 8px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'"><i class="fas fa-ticket-alt" style="width: 20px; color: var(--secondary);"></i> Bookings</a>
+                            <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 5px 0;"></div>
+                            <a href="#" onclick="logout(); return false;" style="display: block; padding: 10px; color: #ff4757; text-decoration: none; border-radius: 8px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,71,87,0.1)'" onmouseout="this.style.background='transparent'"><i class="fas fa-sign-out-alt" style="width: 20px;"></i> Logout</a>
+                        </div>
+                    </div>
+                `;
+            } else {
+                authBtn.innerHTML = `<button class="btn btn-primary btn-sm" onclick="toggleAuth()" style="border-radius: 20px; padding: 8px 20px;"><i class="fas fa-sign-in-alt"></i> Login</button>`;
+            }
+        }
+
+        // ============ BOOKING FUNCTIONS ============
+        function getItemById(id) {
+            for (let category in app.data) {
+                if (Array.isArray(app.data[category])) {
+                    const item = app.data[category].find(i => i.id === id);
+                    if (item) return item;
+                }
+            }
+            return null;
+        }
+
+                function openBooking(id) {
+            loadStore();
+            if (!app.store.currentUser) {
+                showNotification('❌ Please login first', 'error');
+                openModal('authModal');
+                return;
+            }
+
+            const item = getItemById(id);
+            if (!item) return;
+
+            app.store.currentBooking = item;
+            app.store.selectedSeats = [];
+            
+            const itemType = getItemTypeFromCurrentBooking();
+            if (itemType === 'movies') {
+                document.getElementById('movieDetailsTitle').textContent = item.name;
+                document.getElementById('movieDetailsPoster').src = item.image;
+                document.getElementById('movieDetailsBg').style.backgroundImage = `url('${item.image}')`;
+                document.getElementById('movieDetailsRating').innerHTML = item.rating;
+                document.getElementById('movieDetailsLanguages').innerHTML = item.languages ? item.languages.join(', ') : 'All Languages';
+                document.getElementById('movieDetailsFormats').innerHTML = item.formats ? item.formats.join(', ') : '2D';
+                
+                document.getElementById('btnBookMovie').onclick = () => {
+                    closeModal('movieDetailsModal');
+                    showTheatresForMovie(item);
+                };
+                openModal('movieDetailsModal');
+                return;
+            }
+
+            document.getElementById('bookingDetails').innerHTML = `
+                <div style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="font-size: 32px; margin: 0 0 10px 0;">${item.emoji}</p>
+                    <p style="font-size: 24px; margin: 0 0 5px 0; font-weight: 700;">${item.name}</p>
+                    <p style="margin: 0; opacity: 0.9;">Price per ticket: <strong>₹${item.price}</strong></p>
+                </div>
+            `;
+
+            renderSeats(item.seats);
+            openModal('bookingModal');
+        }
+
+        function renderSeats(totalSeats) {
+            const seatGrid = document.getElementById('seatGrid');
+            const itemType = getItemTypeFromCurrentBooking();
+            let seatsHtml = '';
+
+            if (itemType === 'movies') {
+                // Movie Theater Layout: 8 columns x rows
+                const cols = 8;
+                const rows = Math.ceil(totalSeats / cols);
+                seatsHtml = '<div style="display: grid; grid-template-columns: repeat(' + cols + ', 1fr); gap: 8px; margin-bottom: 20px;">';
+                seatsHtml += '<div style="grid-column: 1 / -1; text-align: center; font-weight: bold; color: #666; margin-bottom: 10px;">🎬 Screen 🎬</div>';
+                
+                for (let i = 1; i <= totalSeats; i++) {
+                    const row = Math.ceil(i / cols);
+                    const col = ((i - 1) % cols) + 1;
+                    const seatLabel = String.fromCharCode(64 + row) + col;
+                    const isReserved = Math.random() < 0.2;
+                    const isSelected = app.store.selectedSeats.includes(i);
+                    const seatClass = isReserved ? 'reserved' : isSelected ? 'selected' : '';
+                    
+                    seatsHtml += `<div class="seat ${seatClass}" onclick="toggleSeat(${i}, this)" title="${seatLabel}" ${isReserved ? 'style="cursor: not-allowed;"' : ''}>${seatLabel}</div>`;
+                }
+                seatsHtml += '</div>';
+            if (itemType === 'trains') {
+                seatsHtml = '<div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; max-width: 400px; margin: 0 auto; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px;">';
+                for (let cabin = 1; cabin <= 3; cabin++) {
+                    seatsHtml += `<div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; background: rgba(255,255,255,0.02);">
+                        <div style="font-size: 10px; color: #888; text-align: center; margin-bottom: 10px;">Cabin ${cabin}</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 30px 1fr 1fr; gap: 5px; text-align: center;">`;
+                    
+                    const types = ['LB', 'MB', 'UB', '', 'SL', 'SU'];
+                    types.forEach((type, idx) => {
+                        if (type === '') {
+                            seatsHtml += `<div></div>`; // Aisle
+                            return;
+                        }
+                        const seatNo = (cabin - 1) * 5 + (idx > 3 ? idx - 1 : idx + 1);
+                        const isReserved = Math.random() < 0.3;
+                        const isSelected = app.store.selectedSeats.includes(seatNo);
+                        const seatClass = isReserved ? 'reserved' : isSelected ? 'selected' : '';
+                        const style = isReserved ? 'background:rgba(255,0,85,0.1); border-color:rgba(255,0,85,0.2); color:rgba(255,0,85,0.4); cursor:not-allowed;' : 'background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-muted);';
+                        
+                        seatsHtml += `<div class="seat ${seatClass}" onclick="toggleSeat(${seatNo}, this)" style="height: 40px; display:flex; flex-direction: column; align-items:center; justify-content:center; font-size:12px; font-weight:600; border-radius:4px; cursor:pointer; ${style}"><span style="font-size: 14px;">${seatNo}</span><span style="font-size: 8px;">${type}</span></div>`;
+                    });
+                    seatsHtml += `</div></div>`;
+                }
+                seatsHtml += '</div>';
+            } else if (itemType === 'buses') {
+                seatsHtml = '<div style="display: flex; justify-content: center; gap: 40px; margin-bottom: 20px;">';
+                
+                // Lower Deck
+                seatsHtml += `<div style="background: rgba(0,0,0,0.2); border: 2px solid rgba(255,255,255,0.1); border-radius: 20px 20px 5px 5px; padding: 20px; padding-top: 40px; position: relative;">
+                    <div style="position: absolute; top: 10px; right: 20px; width: 30px; height: 30px; border: 1px solid #555; border-radius: 50%; display:flex; align-items:center; justify-content:center;"><i class="fas fa-steering-wheel" style="font-size:12px; color:#555;"></i></div>
+                    <div style="text-align: center; font-size: 10px; color: #888; margin-bottom: 20px;">LOWER DECK</div>
+                    <div style="display: grid; grid-template-columns: 40px 20px 40px 40px; gap: 10px;">`;
+                for(let i=1; i<=15; i++) {
+                    const isReserved = Math.random() < 0.2;
+                    const style = isReserved ? 'background:rgba(255,0,85,0.1); border-color:rgba(255,0,85,0.2); color:rgba(255,0,85,0.4); cursor:not-allowed;' : 'background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-muted);';
+                    if (i % 3 === 2) seatsHtml += `<div></div>`; // Aisle
+                    seatsHtml += `<div class="seat ${isReserved?'reserved':''}" onclick="toggleSeat(${i}, this)" style="height: 60px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; border-radius:6px; cursor:pointer; ${style}">${i}</div>`;
+                }
+                seatsHtml += `</div></div>`;
+                
+                // Upper Deck
+                seatsHtml += `<div style="background: rgba(0,0,0,0.2); border: 2px solid rgba(255,255,255,0.1); border-radius: 20px 20px 5px 5px; padding: 20px; padding-top: 40px;">
+                    <div style="text-align: center; font-size: 10px; color: #888; margin-bottom: 20px;">UPPER DECK (SLEEPER)</div>
+                    <div style="display: grid; grid-template-columns: 40px 20px 40px 40px; gap: 10px;">`;
+                for(let i=16; i<=30; i++) {
+                    const isReserved = Math.random() < 0.2;
+                    const style = isReserved ? 'background:rgba(255,0,85,0.1); border-color:rgba(255,0,85,0.2); color:rgba(255,0,85,0.4); cursor:not-allowed;' : 'background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-muted);';
+                    if (i % 3 === 2) seatsHtml += `<div></div>`; // Aisle
+                    seatsHtml += `<div class="seat ${isReserved?'reserved':''}" onclick="toggleSeat(${i}, this)" style="height: 80px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; border-radius:6px; cursor:pointer; ${style}">${i}</div>`;
+                }
+                seatsHtml += `</div></div>`;
+                
+                seatsHtml += '</div>';
+            }
+            } else if (itemType === 'flights') {
+                // Airplane Layout: A-F columns with rows
+                const cols = 6;
+                const rows = Math.ceil(totalSeats / cols);
+                seatsHtml = '<div style="display: grid; grid-template-columns: repeat(' + cols + ', 1fr); gap: 8px; margin-bottom: 20px;">';
+                
+                for (let i = 1; i <= totalSeats; i++) {
+                    const row = Math.ceil(i / cols);
+                    const col = ((i - 1) % cols);
+                    const colLabel = String.fromCharCode(65 + col);
+                    const seatLabel = row + colLabel;
+                    const isReserved = Math.random() < 0.2;
+                    const isSelected = app.store.selectedSeats.includes(i);
+                    const seatClass = isReserved ? 'reserved' : isSelected ? 'selected' : '';
+                    
+                    if (col === 2 || col === 3) {
+                        seatsHtml += '<div></div>';
+                        continue;
+                    }
+                    seatsHtml += `<div class="seat ${seatClass}" onclick="toggleSeat(${i}, this)" title="${seatLabel}" ${isReserved ? 'style="cursor: not-allowed;"' : ''}>${colLabel}</div>`;
+                }
+                seatsHtml += '</div>';
+            } else if (itemType === 'buses') {
+                // Bus Layout: 2 columns with aisle
+                seatsHtml = '<div style="display: grid; grid-template-columns: 1fr 20px 1fr; gap: 10px; margin-bottom: 20px; align-items: center;">';
+                seatsHtml += '<div style="grid-column: 1 / 4; text-align: center; font-weight: bold; color: #666;">🚌 Front 🚌</div>';
+                
+                for (let i = 1; i <= totalSeats; i++) {
+                    const side = i % 2;
+                    const row = Math.ceil(i / 2);
+                    const seatLabel = 'Seat ' + i;
+                    const isReserved = Math.random() < 0.2;
+                    const isSelected = app.store.selectedSeats.includes(i);
+                    const seatClass = isReserved ? 'reserved' : isSelected ? 'selected' : '';
+                    
+                    if (side === 1) {
+                        seatsHtml += `<div class="seat ${seatClass}" onclick="toggleSeat(${i}, this)" title="${seatLabel}" ${isReserved ? 'style="cursor: not-allowed;"' : ''}>${i}</div>`;
+                    } else {
+                        seatsHtml += `<div style="grid-column: 2;"></div>`;
+                        seatsHtml += `<div class="seat ${seatClass}" onclick="toggleSeat(${i}, this)" title="${seatLabel}" ${isReserved ? 'style="cursor: not-allowed;"' : ''}>${i}</div>`;
+                    }
+                }
+                seatsHtml += '</div>';
+            } else {
+                // Generic/Events Layout: flexible grid
+                const cols = 6;
+                seatsHtml = '<div style="display: grid; grid-template-columns: repeat(' + cols + ', 1fr); gap: 10px; margin-bottom: 20px;">';
+                
+                for (let i = 1; i <= totalSeats; i++) {
+                    const isReserved = Math.random() < 0.2;
+                    const isSelected = app.store.selectedSeats.includes(i);
+                    const seatClass = isReserved ? 'reserved' : isSelected ? 'selected' : '';
+                    
+                    seatsHtml += `<div class="seat ${seatClass}" onclick="toggleSeat(${i}, this)" ${isReserved ? 'style="cursor: not-allowed;"' : ''}>${i}</div>`;
+                }
+                seatsHtml += '</div>';
+            }
+            
+            seatGrid.innerHTML = seatsHtml;
+            updateSeatCount();
+        }
+        
+        function getItemTypeFromCurrentBooking() {
+            const item = app.store.currentBooking;
+            if (app.data.movies.find(m => m.id === item.id)) return 'movies';
+            if (app.data.trains.find(t => t.id === item.id)) return 'trains';
+            if (app.data.flights.find(f => f.id === item.id)) return 'flights';
+            if (app.data.buses.find(b => b.id === item.id)) return 'buses';
+            return 'events';
+        }
+
+        function toggleSeat(seatNo, element) {
+            if (element.classList.contains('reserved')) return;
+            
+            const quantity = parseInt(document.getElementById('quantity').value);
+            
+            if (element.classList.contains('selected')) {
+                element.classList.remove('selected');
+                app.store.selectedSeats = app.store.selectedSeats.filter(s => s !== seatNo);
+            } else {
+                if (app.store.selectedSeats.length < quantity) {
+                    element.classList.add('selected');
+                    app.store.selectedSeats.push(seatNo);
+                } else {
+                    showNotification(`❌ You can only select ${quantity} seat(s)`, 'warning');
+                }
+            }
+            updateSeatCount();
+        }
+
+        function updateSeatCount() {
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const selected = app.store.selectedSeats.length;
+            document.getElementById('selectedSeatsCount').textContent = selected;
+            
+            if (selected !== quantity) {
+                showNotification(`Select ${quantity} seat(s). Currently selected: ${selected}`, 'info');
+            }
+        }
+
+        function addToCart() {
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const selected = app.store.selectedSeats.length;
+
+            if (selected !== quantity) {
+                showNotification(`❌ Please select exactly ${quantity} seat(s)`, 'error');
+                return;
+            }
+
+            const { name, price, emoji } = app.store.currentBooking;
+            
+            app.store.cart.push({
+                id: Date.now(),
+                name,
+                price,
+                emoji,
+                quantity,
+                seats: [...app.store.selectedSeats],
+                total: price * quantity
+            });
+
+            saveStore();
+            showNotification(`✅ ${quantity} ticket(s) added to cart!`, 'success');
+            closeModal('bookingModal');
+
+            setTimeout(() => {
+                if (confirm('View cart and checkout?')) {
+                    openCheckout();
+                }
+            }, 500);
+        }
+
+        function openCheckout() {
+            loadStore();
+            if (app.store.cart.length === 0) {
+                showNotification('❌ Cart is empty', 'error');
+                return;
+            }
+
+            let summary = app.store.cart.map((item, idx) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);">
+                    <div>
+                        <p style="margin: 0; font-weight: 600;">
+                            ${item.emoji} ${item.name} <span class="badge">x${item.quantity}</span>
+                        </p>
+                        <p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">
+                            Seats: ${item.seats.join(', ')}
+                        </p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="margin: 0; font-weight: 700; font-size: 16px; color: var(--primary);">₹${item.total}</p>
+                        <button class="btn btn-danger btn-sm" style="margin-top: 5px;" onclick="removeFromCart(${idx})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            const total = app.store.cart.reduce((sum, item) => sum + item.total, 0);
+            summary += `
+                <div style="padding-top: 12px; border-top: 2px solid var(--primary); display: flex; justify-content: space-between; margin-top: 12px;">
+                    <strong>Total Amount:</strong>
+                    <strong style="color: var(--primary); font-size: 20px;">₹${total}</strong>
+                </div>
+            `;
+
+            document.getElementById('cartSummary').innerHTML = summary;
+            openModal('checkoutModal');
+        }
+
+        function removeFromCart(index) {
+            app.store.cart.splice(index, 1);
+            saveStore();
+            openCheckout();
+            showNotification('Item removed from cart', 'info');
+        }
+
+        function clearCart() {
+            app.store.cart = [];
+            saveStore();
+            showNotification('Cart cleared', 'info');
+        }
+
+        let selectedPaymentMethod = 'card';
+        
+        function selectPaymentMethod(method, button) {
+            selectedPaymentMethod = method;
+            document.querySelectorAll('[id^="paymentMethod"]').forEach(btn => btn.classList.remove('btn-primary', 'btn-outline'));
+            document.querySelectorAll('[id^="paymentMethod"]').forEach(btn => btn.classList.add('btn-outline'));
+            button.classList.remove('btn-outline');
+            button.classList.add('btn-primary');
+            
+            document.getElementById('cardPayment').style.display = 'none';
+            document.getElementById('upiPayment').style.display = 'none';
+            document.getElementById('googlePayPayment').style.display = 'none';
+            document.getElementById('paytmPayment').style.display = 'none';
+            document.getElementById('scannerPayment').style.display = 'none';
+            
+            if (method === 'card') document.getElementById('cardPayment').style.display = 'block';
+            else if (method === 'upi') document.getElementById('upiPayment').style.display = 'block';
+            else if (method === 'googlepay') document.getElementById('googlePayPayment').style.display = 'block';
+            else if (method === 'paytm') document.getElementById('paytmPayment').style.display = 'block';
+            else if (method === 'scanner') document.getElementById('scannerPayment').style.display = 'block';
+        }
+        
+        function startUPIScanner() {
+            showNotification('📱 Camera access requested...', 'info');
+            alert('UPI Scanner Demo:\nPoint camera at QR code\n\nIn production, integrate with browser Camera API and QR code scanning library');
+        }
+        
+        function processPayment() {
+            loadStore();
+            const total = app.store.cart.reduce((sum, item) => sum + item.total, 0);
+
+            if (app.store.currentUser.wallet < total) {
+                showNotification('❌ Insufficient wallet balance', 'error');
+                return;
+            }
+
+            const paymentMethodName = {
+                'card': 'Credit/Debit Card',
+                'upi': 'UPI',
+                'googlepay': 'Google Pay',
+                'paytm': 'Paytm',
+                'scanner': 'UPI Scanner'
+            }[selectedPaymentMethod];
+            
+            showNotification(`⏳ Processing payment via ${paymentMethodName}... <span class="loading"></span>`, 'info');
+
+            setTimeout(() => {
+                // Simulate payment processing
+                const success = Math.random() > 0.1; // 90% success rate
+                
+                if (success) {
+                    app.store.currentUser.wallet -= total;
+
+                    const bookingId = 'BOOK' + Date.now();
+                    const booking = {
+                        id: bookingId,
+                        items: app.store.cart,
+                        total: total,
+                        date: new Date().toLocaleDateString(),
+                        time: new Date().toLocaleTimeString(),
+                        paymentMethod: paymentMethodName,
+                        qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${bookingId}`,
+                        status: 'Confirmed'
+                    };
+
+                    app.store.bookings.push(booking);
+                    app.store.cart = [];
+                    saveStore();
+
+                    showNotification(`✅ Payment successful via ${paymentMethodName}!`, 'success');
+                    closeModal('checkoutModal');
+
+                    // Show confirmation
+                    showConfirmation(booking);
+                } else {
+                    showNotification(`❌ Payment failed. Please try again with ${paymentMethodName}`, 'error');
+                }
+            }, 2000);
+        }
+
+        function showConfirmation(booking) {
+            let itemsHtml = booking.items.map(item => `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span>${item.emoji} ${item.name}</span>
+                    <span>₹${item.total}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('confirmationDetails').innerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <p style="margin: 0 0 10px 0; font-weight: 600;"><i class="fas fa-receipt"></i> Booking Details</p>
+                    <p style="margin: 5px 0; font-size: 14px;"><strong>Booking ID:</strong> ${booking.id}</p>
+                    <p style="margin: 5px 0; font-size: 14px;"><strong>Date:</strong> ${booking.date} ${booking.time}</p>
+                    <p style="margin: 5px 0; font-size: 14px;"><strong>Status:</strong> <span class="booking-status">${booking.status}</span></p>
+                </div>
+                <div style="border-top: 1px solid var(--border); padding-top: 15px;">
+                    <p style="margin: 0 0 10px 0; font-weight: 600;"><i class="fas fa-list"></i> Items</p>
+                    ${itemsHtml}
+                    <div style="display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); font-weight: 700;">
+                        <span>Total:</span>
+                        <span style="color: var(--primary); font-size: 18px;">₹${booking.total}</span>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('qrCodeImg').src = booking.qrCode;
+            document.getElementById('bookingId').textContent = `Booking ID: ${booking.id}`;
+
+            closeModal('checkoutModal');
+            openModal('confirmationModal');
+        }
+
+        function downloadQR() {
+            const qrImg = document.getElementById('qrCodeImg');
+            const link = document.createElement('a');
+            link.href = qrImg.src;
+            link.download = 'ticket-' + app.store.bookings[app.store.bookings.length - 1].id + '.png';
+            link.click();
+            showNotification('✅ Ticket downloaded!', 'success');
+        }
+
+        
+        // ============ DISTRICT APP STYLE MOVIE BOOKING ============
+        const districtTheatres = {
+            'Hyderabad': [
+                { name: "PVR: Inorbit Mall", location: "Cyberabad", formats: ["2D", "3D", "IMAX"], timings: ["10:00 AM", "01:30 PM", "05:00 PM", "09:30 PM"], price: 250 },
+                { name: "AMB Cinemas", location: "Gachibowli", formats: ["2D", "3D"], timings: ["11:00 AM", "02:45 PM", "06:30 PM"], price: 300 },
+                { name: "Prasads Multiplex", location: "Necklace Road", formats: ["2D", "Large Screen"], timings: ["08:45 AM", "12:15 PM", "07:30 PM"], price: 150 }
+            ],
+            'Mumbai': [
+                { name: "PVR: Juhu", location: "Juhu", formats: ["2D", "3D"], timings: ["09:00 AM", "12:30 PM", "04:00 PM", "08:30 PM"], price: 350 },
+                { name: "INOX: Nariman Point", location: "Nariman Point", formats: ["2D", "IMAX"], timings: ["11:00 AM", "03:45 PM", "07:30 PM"], price: 400 }
+            ],
+            'Delhi': [
+                { name: "PVR: Select City Walk", location: "Saket", formats: ["2D", "4DX"], timings: ["10:30 AM", "02:00 PM", "06:15 PM"], price: 300 },
+                { name: "Cinepolis", location: "Rohini", formats: ["2D"], timings: ["09:00 AM", "01:30 PM", "05:00 PM"], price: 250 }
+            ]
+        };
+
+        let selectedDistrictTheatre = null;
+        let selectedDistrictTime = null;
+        let activeLocation = 'Hyderabad';
+
+        function showTheatresForMovie(movie) {
+            const locSelect = document.getElementById('globalLocation');
+            activeLocation = locSelect ? locSelect.value : 'Hyderabad';
+            
+            let theatres = districtTheatres[activeLocation];
+            if (!theatres) theatres = districtTheatres['Hyderabad']; // Fallback
+            
+            document.getElementById('theatresMovieTitle').innerHTML = `Select Theatre for <span style="color:var(--primary);">${movie.name}</span> in ${activeLocation}`;
+            const list = document.getElementById('theatresList');
+            
+            if (theatres.length === 0) {
+                list.innerHTML = `<p style="color:var(--text-muted); text-align:center; padding:20px;">No theatres found in ${activeLocation}</p>`;
+            } else {
+                let html = '';
+                
+                // Group 1
+                html += `<div style="margin-top: 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-location-arrow" style="color: var(--primary);"></i>
+                    <h4 style="margin: 0; color: white; text-transform: uppercase; letter-spacing: 1px; font-size: 12px;">Nearby (Within 5km)</h4>
+                    <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.1);"></div>
+                </div>`;
+                
+                theatres.forEach((t, idx) => {
+                    if (idx === 2) {
+                        // Group 2
+                        html += `<div style="margin-top: 30px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-building" style="color: var(--secondary);"></i>
+                            <h4 style="margin: 0; color: white; text-transform: uppercase; letter-spacing: 1px; font-size: 12px;">City Center</h4>
+                            <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.1);"></div>
+                        </div>`;
+                    }
+                    
+                    const distance = (Math.random() * 5 + 1).toFixed(1);
+                    html += `
+                    <div style="background: rgba(20,20,30,0.8); padding: 20px; margin-bottom: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: transform 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <div>
+                                <h3 style="margin:0; color:white; font-size: 18px;">${t.name}</h3>
+                                <p style="margin:5px 0 0 0; font-size:13px; color:var(--text-muted);">
+                                    <i class="fas fa-map-marker-alt" style="color:var(--danger)"></i> ${t.location} <span style="color:#aaa; font-size:11px;">(${distance} km away)</span> &nbsp;|&nbsp; 
+                                    <i class="fas fa-video"></i> ${t.formats.join(', ')}
+                                </p>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap: 12px; flex-wrap: wrap;">
+                            ${t.timings.map(time => {
+                                const occupancy = Math.random();
+                                let statusColor = '#00b894'; // Green
+                                let statusTag = 'Available';
+                                
+                                if (occupancy > 0.85) {
+                                    statusColor = '#d63031'; // Red
+                                    statusTag = 'Almost Full';
+                                } else if (occupancy > 0.6) {
+                                    statusColor = '#e17055'; // Orange
+                                    statusTag = 'Filling Fast';
+                                }
+                                
+                                return `<div style="position:relative; display:inline-block; margin-top:10px;">
+                                    <button class="btn btn-sm" style="border-radius: 6px; background: transparent; border: 1px solid ${statusColor}; color: ${statusColor}; font-weight: 600; padding: 6px 12px; transition: 0.2s; cursor: pointer;" onmouseover="this.style.background='${statusColor}22'" onmouseout="this.style.background='transparent'" onclick="selectDistrictShow(${idx}, '${time}')">${time}</button>
+                                    <span style="position:absolute; top:-10px; right:-5px; color:${statusColor}; font-size:9px; font-weight:bold; background: rgba(0,0,0,0.8); padding: 1px 4px; border-radius: 3px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">${statusTag}</span>
+                                </div>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                `});
+                list.innerHTML = html;
+            }
+            openModal('theatresModal');
+        }
+
+        function selectDistrictShow(theatreIdx, time) {
+            let theatres = districtTheatres[activeLocation] || districtTheatres['Hyderabad'];
+            selectedDistrictTheatre = theatres[theatreIdx];
+            selectedDistrictTime = time;
+            app.store.currentBooking.price = selectedDistrictTheatre.price;
+            
+            closeModal('theatresModal');
+            openDistrictSeatModal();
+        }
+
+        function openDistrictSeatModal() {
+            document.getElementById('districtSeatInfo').innerHTML = `
+                <h3>${selectedDistrictTheatre.name}</h3>
+                <p style="color:var(--text-muted);">${selectedDistrictTheatre.location} | ${selectedDistrictTime}</p>
+            `;
+            
+            const grid = document.getElementById('districtSeatGrid');
+            grid.innerHTML = '';
+            
+            const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']; // A-J
+            let html = '<div style="display:flex; flex-direction:column; gap:10px; align-items:center;">';
+            
+            rows.forEach(rowLetter => {
+                html += `<div style="display:flex; gap:10px; align-items:center;">
+                    <div style="width:20px; font-weight:bold; color:var(--text-muted); text-align:center;">${rowLetter}</div>
+                    <div style="display:flex; gap:8px;">`;
+                
+                for(let col = 1; col <= 12; col++) { // 1-12
+                    if (col === 7) html += `<div style="width:30px;"></div>`; // Larger Aisle
+                    const seatId = rowLetter + col;
+                    const isBooked = Math.random() < 0.25;
+                    const cssClass = isBooked ? 'booked' : '';
+                    html += `<div class="district-seat ${cssClass}" onclick="toggleDistrictSeat('${seatId}', this)">${col}</div>`;
+                }
+                html += `</div></div>`;
+            });
+            html += '</div>';
+            
+            grid.innerHTML = html;
+            
+            app.store.selectedSeats = [];
+            updateLivePrice();
+            
+            openModal('districtSeatModal');
+        }
+
+        function toggleDistrictSeat(el, seatId) {
+            if(el.classList.contains('reserved')) return;
+            
+            if(el.classList.contains('selected')) {
+                el.classList.remove('selected');
+                app.store.selectedSeats = app.store.selectedSeats.filter(s => s !== seatId);
+                el.style.background = 'rgba(255,255,255,0.05)';
+                el.style.color = 'var(--text-muted)';
+                el.style.borderColor = 'rgba(255,255,255,0.1)';
+                el.style.boxShadow = 'none';
+            } else {
+                el.classList.add('selected');
+                app.store.selectedSeats.push(seatId);
+                el.style.background = 'var(--primary)';
+                el.style.color = '#000';
+                el.style.borderColor = 'var(--primary)';
+                el.style.boxShadow = '0 0 15px rgba(0, 243, 255, 0.4)';
+            }
+            updateDistrictSummary();
+        }
+
+        function updateDistrictSummary() {
+            const count = app.store.selectedSeats.length;
+            document.getElementById('districtSeatCount').innerHTML = count > 0 ? `${app.store.selectedSeats.join(', ')} <br><span style="color:white;">${count} ticket(s)</span>` : 'No seats selected';
+            document.getElementById('districtTotalPrice').textContent = `₹${count * selectedDistrictTheatre.price}`;
+        }
+
+        function confirmDistrictSeats() {
+            if(app.store.selectedSeats.length === 0) {
+                showNotification('❌ Please select at least 1 seat', 'error');
+                return;
+            }
+            
+            const count = app.store.selectedSeats.length;
+            const total = count * selectedDistrictTheatre.price;
+            
+            app.store.cart.push({
+                id: Date.now(),
+                name: app.store.currentBooking.name + ` (${selectedDistrictTheatre.name} | ${selectedDistrictTime})`,
+                price: selectedDistrictTheatre.price,
+                emoji: app.store.currentBooking.emoji,
+                quantity: count,
+                seats: [...app.store.selectedSeats],
+                total: total
+            });
+
+            saveStore();
+            showNotification(`✅ ${count} ticket(s) added to cart!`, 'success');
+            closeModal('districtSeatModal');
+
+            setTimeout(() => {
+                openCheckout();
+            }, 500);
+        }
+
+        // ============ DASHBOARD FUNCTIONS ============
+        function renderDashboard() {
+            loadStore();
+            const bookings = app.store.bookings || [];
+            const totalSpent = bookings.reduce((sum, b) => sum + b.total, 0);
+            
+            document.getElementById('totalBookings').textContent = bookings.length;
+            document.getElementById('totalSpent').textContent = '₹' + totalSpent;
+            document.getElementById('walletBalance').textContent = '₹' + (app.store.currentUser ? app.store.currentUser.wallet : 0);
+
+            // Render Recent Activity (last 3 bookings)
+            const recent = bookings.slice(-3).reverse();
+            const activityEl = document.getElementById('recentActivityList');
+            if (activityEl) {
+                if (recent.length === 0) {
+                    activityEl.innerHTML = '<p style="color:#666; padding: 20px 0;">No recent activity. Start booking to see your history here!</p>';
+                } else {
+                    activityEl.innerHTML = recent.map(b => `
+                        <div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <div>
+                                <h4 style="margin:0 0 5px 0; color:white;">Booking #${b.id}</h4>
+                                <p style="margin:0; font-size:12px; color:var(--text-muted);">${b.date}</p>
+                            </div>
+                            <div style="text-align:right;">
+                                <p style="margin:0; font-weight:bold; color:var(--primary);">₹${b.total}</p>
+                                <span style="font-size:11px; background:rgba(0,255,0,0.1); color:#0f0; padding:2px 6px; border-radius:4px;">${b.status}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+
+        // ============ MY BOOKINGS FUNCTIONS ============
+        function renderBookings() {
+            loadStore();
+            const bookings = app.store.bookings || [];
+            const listEl = document.getElementById('bookingsList');
+            const emptyEl = document.getElementById('noBookingsMsg');
+            
+            if (bookings.length === 0) {
+                if (listEl) listEl.innerHTML = '';
+                if (emptyEl) emptyEl.style.display = 'block';
+                return;
+            }
+
+            if (emptyEl) emptyEl.style.display = 'none';
+
+            const bookingsHtml = bookings.slice().reverse().map(booking => `
+                <div style="background:rgba(20,20,30,0.8); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:20px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h3 style="margin:0 0 10px 0; color:white;"><i class="fas fa-ticket-alt" style="color:var(--primary);"></i> Booking #${booking.id}</h3>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:14px;">
+                            <p style="margin:0; color:var(--text-muted);"><strong>Date:</strong> <span style="color:#ccc;">${booking.date} ${booking.time || ''}</span></p>
+                            <p style="margin:0; color:var(--text-muted);"><strong>Amount:</strong> <span style="color:var(--primary); font-weight:bold;">₹${booking.total}</span></p>
+                            <p style="margin:0; grid-column:1/-1; color:var(--text-muted);"><strong>Items:</strong> <span style="color:#ccc;">${booking.items.map(i => i.emoji + ' ' + i.name).join(', ')}</span></p>
+                        </div>
+                    </div>
+                    <div style="text-align:center; min-width:130px;">
+                        ${booking.qrCode ? '<img src="' + booking.qrCode + '" style="width:80px; height:80px; border-radius:8px; margin-bottom:8px;">' : ''}
+                        <button class="btn btn-outline btn-sm" style="width:100%; margin-bottom:5px;" onclick="showNotification('Downloading e-ticket...', 'info')">
+                            <i class="fas fa-download"></i> Ticket
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            if (listEl) listEl.innerHTML = bookingsHtml;
+        }
+
+        function downloadBookingQR(qrUrl, bookingId) {
+            const link = document.createElement('a');
+            link.href = qrUrl;
+            link.download = 'ticket-' + bookingId + '.png';
+            link.click();
+            showNotification('✅ Ticket downloaded!', 'success');
+        }
+
+        // ============ PROFILE FUNCTIONS ============
+        function renderProfile() {
+            loadStore();
+            if (!app.store.currentUser) return;
+            
+            const user = app.store.currentUser;
+            document.getElementById('profileName').textContent = user.name;
+            document.getElementById('profileEmail').textContent = user.email;
+            document.getElementById('viewEmail').textContent = user.email;
+            document.getElementById('viewPhone').textContent = user.phone || 'Not provided';
+            
+            if (user.avatar) {
+                document.getElementById('profileAvatarDisplay').style.backgroundImage = `url(${user.avatar})`;
+                document.getElementById('profileAvatarIcon').style.display = 'none';
+            } else {
+                document.getElementById('profileAvatarDisplay').style.backgroundImage = 'none';
+                document.getElementById('profileAvatarIcon').style.display = 'block';
+            }
+        }
+
+        let pendingAvatar = null;
+
+        function toggleEditProfile() {
+            const view = document.getElementById('profileView');
+            const edit = document.getElementById('editProfileForm');
+            
+            if (view.style.display === 'none') {
+                view.style.display = 'block';
+                edit.style.display = 'none';
+            } else {
+                view.style.display = 'none';
+                edit.style.display = 'block';
+                
+                const user = app.store.currentUser;
+                document.getElementById('editName').value = user.name;
+                document.getElementById('editEmail').value = user.email;
+                document.getElementById('editPhone').value = user.phone || '';
+                pendingAvatar = user.avatar;
+                
+                if (pendingAvatar) {
+                    document.getElementById('imagePreview').style.backgroundImage = `url(${pendingAvatar})`;
+                    document.getElementById('imagePreview').style.backgroundSize = 'cover';
+                    document.getElementById('imagePreviewIcon').style.display = 'none';
+                }
+            }
+        }
+
+        function previewProfileImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    pendingAvatar = e.target.result;
+                    document.getElementById('imagePreview').style.backgroundImage = `url(${pendingAvatar})`;
+                    document.getElementById('imagePreview').style.backgroundSize = 'cover';
+                    document.getElementById('imagePreviewIcon').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveProfile() {
+            if (!app.store.currentUser) return;
+            
+            app.store.currentUser.name = document.getElementById('editName').value;
+            app.store.currentUser.phone = document.getElementById('editPhone').value;
+            app.store.currentUser.avatar = pendingAvatar;
+            
+            saveStore();
+            renderProfile();
+            toggleEditProfile();
+            showNotification('Profile updated successfully!', 'success');
+            updateAuthButton();
+        }
+
+        function deleteAccount() {
+            if (confirm('⚠️ WARNING: This will permanently delete your account and all bookings. Are you sure?')) {
+                app.store.currentUser = null;
+                app.store.bookings = [];
+                app.store.cart = [];
+                saveStore();
+                showNotification('Account deleted successfully.', 'success');
+                goHome();
+                updateAuthButton();
+            }
+        }
+        
+        // ============ CUSTOMIZATION FUNCTIONS ============
+        function setAccentColor(color) {
+            app.store.preferences = app.store.preferences || {};
+            app.store.preferences.accent = color;
+            saveStore();
+            applyPreferences();
+            
+            // Highlight selected swatch
+            document.querySelectorAll('.color-swatch').forEach(sw => {
+                if(sw.style.backgroundColor === color || sw.style.backgroundColor === hexToRgb(color)) {
+                    sw.style.boxShadow = `0 0 15px ${color}`;
+                    sw.style.border = '2px solid white';
+                } else {
+                    sw.style.boxShadow = 'none';
+                    sw.style.border = 'none';
+                }
+            });
+        }
+        
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? `rgb(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)})` : null;
+        }
+
+        function applyPreferences() {
+            loadStore();
+            const prefs = app.store.preferences || {};
+            
+            // Apply Theme
+            const theme = document.getElementById('themeSelect') ? document.getElementById('themeSelect').value : (prefs.theme || 'dark');
+            prefs.theme = theme;
+            
+            if (theme === 'light') {
+                document.documentElement.style.setProperty('--bg-dark', '#f0f0f5');
+                document.documentElement.style.setProperty('--text', '#111');
+                document.documentElement.style.setProperty('--text-muted', '#666');
+                document.documentElement.style.setProperty('--surface', 'rgba(255, 255, 255, 0.8)');
+                document.documentElement.style.setProperty('--surface-hover', 'rgba(240, 240, 240, 0.9)');
+            } else {
+                document.documentElement.style.setProperty('--bg-dark', '#05050f');
+                document.documentElement.style.setProperty('--text', '#ffffff');
+                document.documentElement.style.setProperty('--text-muted', '#a0a0b0');
+                document.documentElement.style.setProperty('--surface', 'rgba(20, 20, 30, 0.6)');
+                document.documentElement.style.setProperty('--surface-hover', 'rgba(30, 30, 45, 0.8)');
+            }
+
+            // Apply Accent
+            if (prefs.accent) {
+                document.documentElement.style.setProperty('--primary', prefs.accent);
+            }
+
+            // Apply Font Size
+            const fontSize = document.getElementById('fontSelect') ? document.getElementById('fontSelect').value : (prefs.fontSize || 'medium');
+            prefs.fontSize = fontSize;
+            if (fontSize === 'small') {
+                document.body.style.fontSize = '14px';
+            } else if (fontSize === 'large') {
+                document.body.style.fontSize = '18px';
+            } else {
+                document.body.style.fontSize = '16px';
+            }
+            
+            if(document.getElementById('themeSelect')) {
+                document.getElementById('themeSelect').value = theme;
+                document.getElementById('fontSelect').value = fontSize;
+            }
+
+            app.store.preferences = prefs;
+            try {
+                localStorage.setItem('ticketxStore', JSON.stringify({
+                    currentUser: app.store.currentUser,
+                    bookings: app.store.bookings,
+                    cart: app.store.cart,
+                    preferences: app.store.preferences
+                }));
+            } catch(e) {}
+        }
+        
+        window.addEventListener('DOMContentLoaded', applyPreferences);
+
+        // ============ HELP AI FUNCTIONS (Gemini) ============
+        async function sendHelpAiQuery() {
+            const input = document.getElementById('helpAiInput');
+            const chatDiv = document.getElementById('helpAiChat');
+            const question = input.value.trim();
+            if (!question) return;
+            
+            // Show user message
+            chatDiv.innerHTML += '<div style="text-align:right; margin-bottom:10px;"><span style="background:var(--primary); color:#000; padding:8px 14px; border-radius:12px 12px 2px 12px; font-size:13px; display:inline-block; max-width:80%;">' + question + '</span></div>';
+            input.value = '';
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+            
+            // Show typing indicator
+            chatDiv.innerHTML += '<div id="helpAiTyping" style="margin-bottom:10px;"><span style="background:rgba(255,255,255,0.1); padding:8px 14px; border-radius:12px 12px 12px 2px; font-size:13px; display:inline-block; color:var(--text-muted);"><i class="fas fa-circle-notch fa-spin"></i> AI is thinking...</span></div>';
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+            
+            try {
+                const apiKey = localStorage.getItem('geminiApiKey') || 'AIzaSyBeGKIfgrtrfnJ-q-WiuS060JBdPGGFXr4';
+                const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: 'You are the official TicketX Pro support assistant. Answer helpfully and concisely (max 3 sentences). Topics: ticket booking (movies, hotels, trains, flights, buses, events), seat selection, payment (card, UPI, Google Pay, Paytm), wallet, QR codes, cancellations, refunds, profile settings, and app customization. User question: ' + question
+                            }]
+                        }]
+                    })
+                });
+                
+                const data = await response.json();
+                // Remove typing indicator
+                const typing = document.getElementById('helpAiTyping');
+                if (typing) typing.remove();
+                
+                let aiText = 'Sorry, I could not process your request. Please try again.';
+                if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                    aiText = data.candidates[0].content.parts[0].text;
+                }
+                
+                chatDiv.innerHTML += '<div style="margin-bottom:10px;"><span style="background:rgba(255,255,255,0.1); padding:8px 14px; border-radius:12px 12px 12px 2px; font-size:13px; display:inline-block; max-width:85%; color:#ccc; line-height:1.5;">' + aiText.replace(/\n/g, '<br>') + '</span></div>';
+                chatDiv.scrollTop = chatDiv.scrollHeight;
+            } catch(err) {
+                const typing = document.getElementById('helpAiTyping');
+                if (typing) typing.remove();
+                chatDiv.innerHTML += '<div style="margin-bottom:10px;"><span style="background:rgba(255,0,85,0.1); padding:8px 14px; border-radius:12px; font-size:13px; display:inline-block; color:var(--danger);">Connection error. Please check your internet and try again.</span></div>';
+                chatDiv.scrollTop = chatDiv.scrollHeight;
+            }
+        }
+
+        // ============ CHATBOT FUNCTIONS ============
+        let geminiApiKey = localStorage.getItem('geminiApiKey') || 'AIzaSyBeGKIfgrtrfnJ-q-WiuS060JBdPGGFXr4';
+        
+        // Auto-save the API key on load
+        if (geminiApiKey) {
+            localStorage.setItem('geminiApiKey', geminiApiKey);
+        }
+        
+        function toggleChat() {
+            document.getElementById('chatWindow').classList.toggle('show');
+            if (document.getElementById('chatWindow').classList.contains('show')) {
+                document.getElementById('chatInput').focus();
+                if (document.getElementById('chatBody').children.length === 0) {
+                    addChatMessage('🤖 Gemini AI Ready! I\'m powered by Google Gemini AI and ready to help you with any questions about TicketX Pro! Ask me anything! 🚀', 'bot');
+                }
+            }
+        }
+
+        function sendChat() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            addChatMessage(message, 'user');
+            input.value = '';
+
+            setTimeout(() => {
+                if (geminiApiKey) {
+                    getGeminiResponse(message);
+                } else {
+                    const response = getDefaultResponse(message);
+                    addChatMessage(response, 'bot');
+                }
+            }, 500);
+        }
+
+        function handleChatInput(event) {
+            if (event.key === 'Enter') {
+                sendChat();
+            }
+        }
+        
+        async function getGeminiResponse(message) {
+            try {
+                addChatMessage('<div class="typing-indicator"><span></span><span></span><span></span></div>', 'bot');
+                
+                const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + geminiApiKey, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: `You are a helpful TicketX Pro booking assistant. Answer briefly about: ticket booking, seat selection, payment methods, QR codes, wallet, cancellations, and refunds. If asked about unrelated topics, politely redirect. User asks: ${message}`
+                            }]
+                        }]
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                    const aiResponse = data.candidates[0].content.parts[0].text;
+                    // Remove the thinking message first
+                    const chatBody = document.getElementById('chatBody');
+                    const lastMsg = chatBody.lastChild;
+                    if (lastMsg && lastMsg.innerHTML.includes('typing-indicator')) {
+                        lastMsg.remove();
+                    }
+                    addChatMessage(aiResponse, 'bot');
+                } else {
+                    // Remove thinking message and show error
+                    const chatBody = document.getElementById('chatBody');
+                    const lastMsg = chatBody.lastChild;
+                    if (lastMsg && lastMsg.innerHTML.includes('typing-indicator')) {
+                        lastMsg.remove();
+                    }
+                    addChatMessage('Sorry, I encountered an error. Please try again or check your API key.', 'bot');
+                }
+            } catch (error) {
+                console.error('Gemini API error:', error);
+                const chatBody = document.getElementById('chatBody');
+                const lastMsg = chatBody.lastChild;
+                if (lastMsg && lastMsg.innerHTML.includes('typing-indicator')) {
+                    lastMsg.remove();
+                }
+                addChatMessage('Unable to connect to AI. Using default responses. Error: ' + error.message, 'bot');
+                setTimeout(() => {
+                    const defaultResponse = getDefaultResponse(message);
+                    addChatMessage(defaultResponse, 'bot');
+                }, 1000);
+            }
+        }
+
+        function getDefaultResponse(message) {
+            const msg = message.toLowerCase();
+            
+            if (msg.includes('api') || msg.includes('gemini') || msg.includes('key')) {
+                return '🔑 To enable Gemini AI:\n1. Get your API key from Google AI Studio\n2. Click Settings in chat\n3. Paste your API key\n4. Save - AI will be fully enabled!';
+            } else if (msg.includes('price') || msg.includes('cost')) {
+                return '💰 Our prices:\n• Movies: ₹200-300\n• Trains: ₹100-800\n• Flights: ₹2000-3000\n• Buses: ₹200-1000\n• Events: ₹800-2000';
+            } else if (msg.includes('book') || msg.includes('booking')) {
+                return '📚 To book:\n1. Browse categories\n2. Click "Book Now"\n3. Select seats\n4. Add to cart\n5. Checkout\n6. Choose payment method\n7. Done!';
+            } else if (msg.includes('payment') || msg.includes('pay')) {
+                return '💳 Payment Methods:\n✓ Credit/Debit Card\n✓ UPI\n✓ Google Pay\n✓ Paytm\n✓ UPI Scanner';
+            } else if (msg.includes('refund')) {
+                return '💰 Refunds processed in 5-7 days for cancelled bookings.';
+            } else if (msg.includes('seat')) {
+                return '🎯 Seats vary by ticket type:\n• Movies: Theater layout (A-H rows)\n• Trains: Coach layout\n• Flights: Airplane (A-F columns)\n• Buses: Side-by-side\n• Events: General';
+            } else if (msg.includes('qr')) {
+                return '📲 Your QR code:\n✓ Generated after booking\n✓ Shown on confirmation\n✓ Download from dashboard\n✓ Show at venue';
+            } else if (msg.includes('hi') || msg.includes('hello')) {
+                return '👋 Hello! How can I help you with TicketX Pro?';
+            }
+            
+            return '🤖 I can help with booking, payment methods, seats, QR codes, refunds, and more. What would you like to know?';
+        }
+
+        function addChatMessage(message, sender) {
+            const chatBody = document.getElementById('chatBody');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+            messageDiv.innerHTML = message;
+            chatBody.appendChild(messageDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+        
+        function showAPIKeyModal() {
+            const key = prompt('🔑 Enter your Google Gemini API Key:\n\nCurrent: ' + (geminiApiKey ? geminiApiKey.substring(0, 10) + '...' : 'Not set') + '\n\nGet it free from:\nhttps://makersuite.google.com/app/apikey\n\nNote: Current key is already loaded!', geminiApiKey);
+            if (key) {
+                geminiApiKey = key.trim();
+                localStorage.setItem('geminiApiKey', geminiApiKey);
+                showNotification('✅ API Key updated! AI is now enabled.', 'success');
+                addChatMessage('🤖 AI Assistant restarted with new API key! Ready to help!', 'bot');
+            }
+        }
+
+        // ============ UTILITY FUNCTIONS ============
+        function showNotification(message, type) {
+            const notif = document.createElement('div');
+            notif.className = `notification ${type}`;
+            notif.innerHTML = message;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 4000);
+        }
+
+        
+        function toggleDistrictSeat(seatId, el) {
+            if (el.classList.contains('booked')) return;
+            
+            if (el.classList.contains('selected')) {
+                el.classList.remove('selected');
+                app.store.selectedSeats = app.store.selectedSeats.filter(s => s !== seatId);
+            } else {
+                if (app.store.selectedSeats.length >= 6) {
+                    showNotification('Maximum 6 seats allowed', 'error');
+                    return;
+                }
+                el.classList.add('selected');
+                app.store.selectedSeats.push(seatId);
+            }
+            updateLivePrice();
+        }
+
+        function updateLivePrice() {
+            const count = app.store.selectedSeats.length;
+            const price = app.store.currentBooking.price * count;
+            const livePriceElement = document.getElementById('districtLivePrice');
+            if(livePriceElement) {
+                livePriceElement.textContent = price;
+            }
+            
+            const btn = document.getElementById('districtProceedBtn');
+            if(btn) {
+                if (count > 0) {
+                    btn.innerHTML = `Book ${count} Ticket(s) • ₹${price}`;
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                } else {
+                    btn.innerHTML = `Select Seats to Proceed`;
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                }
+            }
+        }
+        
+        function proceedDistrictBooking() {
+            if(app.store.selectedSeats.length === 0) {
+                showNotification('❌ Please select at least 1 seat', 'error');
+                return;
+            }
+            
+            const count = app.store.selectedSeats.length;
+            const total = count * selectedDistrictTheatre.price;
+            
+            app.store.cart.push({
+                id: Date.now(),
+                name: app.store.currentBooking.name + ` (${selectedDistrictTheatre.name} | ${selectedDistrictTime})`,
+                price: selectedDistrictTheatre.price,
+                emoji: app.store.currentBooking.emoji || '🍿',
+                quantity: count,
+                seats: [...app.store.selectedSeats],
+                total: total
+            });
+
+            saveStore();
+            showNotification(`✅ ${count} ticket(s) added to cart!`, 'success');
+            closeModal('districtSeatModal');
+
+            setTimeout(() => {
+                if (confirm('View cart and checkout?')) {
+                    openCheckout();
+                }
+            }, 500);
+        }
+
+        
+        // ============ HOTELS LOGIC ============
+        let selectedHotel = null;
+        let selectedRoom = null;
+
+        function openHotelDetails(hotelId) {
+            loadStore();
+            if (!app.store.currentUser) {
+                showNotification('❌ Please login first', 'error');
+                openModal('authModal');
+                return;
+            }
+
+            const hotel = app.data.hotels.find(h => h.id === hotelId);
+            if (!hotel) return;
+            selectedHotel = hotel;
+
+            document.getElementById('hotelDetailsTitle').textContent = hotel.name;
+            document.getElementById('hotelDetailsLocation').innerHTML = `<i class="fas fa-map-marker-alt" style="color:var(--danger)"></i> ${hotel.location}`;
+            document.getElementById('hotelDetailsRating').textContent = hotel.rating;
+            document.getElementById('hotelDetailsBg').style.backgroundImage = `url('${hotel.image}')`;
+            document.getElementById('hotelDetailsDesc').textContent = hotel.description;
+
+            document.getElementById('hotelDetailsAmenities').innerHTML = hotel.amenities.map(a => 
+                `<span style="background:rgba(0, 243, 255, 0.1); border:1px solid rgba(0, 243, 255, 0.3); color:var(--primary); padding:6px 15px; border-radius:20px; font-size:13px;"><i class="fas fa-check"></i> ${a}</span>`
+            ).join('');
+
+            document.getElementById('hotelRoomsList').innerHTML = hotel.rooms.map((room, idx) => `
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; margin-bottom: 15px; display: flex; gap: 20px;">
+                    <img src="${room.image}" style="width: 140px; height: 110px; border-radius: 8px; object-fit: cover;">
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 5px 0; color: white; font-size: 18px;">${room.type}</h4>
+                        <p style="margin: 0 0 5px 0; font-size: 13px; color: var(--text-muted);"><i class="fas fa-user-friends"></i> ${room.capacity}</p>
+                        <p style="margin: 0 0 10px 0; font-size: 12px; color: #aaa;">${room.features}</p>
+                        <p style="margin: 0; font-size: 11px; color: var(--warning);"><i class="fas fa-fire"></i> Limited rooms left</p>
+                    </div>
+                    <div style="text-align: right; min-width: 120px;">
+                        <h3 style="margin: 0 0 10px 0; color: var(--primary);">₹${room.price}<span style="font-size:12px; color:#888;">/nt</span></h3>
+                        <button class="btn btn-outline btn-sm" onclick="selectHotelRoom(${idx})" style="width: 100%; padding:8px;">Select Room</button>
+                    </div>
+                </div>
+            `).join('');
+
+            openModal('hotelDetailsModal');
+        }
+
+        function selectHotelRoom(roomIdx) {
+            selectedRoom = selectedHotel.rooms[roomIdx];
+            closeModal('hotelDetailsModal');
+            
+            document.getElementById('bookingHotelName').textContent = selectedHotel.name;
+            document.getElementById('bookingRoomName').textContent = selectedRoom.type;
+            
+            // Set default dates
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            document.getElementById('hotelCheckIn').value = today.toISOString().split('T')[0];
+            document.getElementById('hotelCheckOut').value = tomorrow.toISOString().split('T')[0];
+            
+            calculateHotelPrice();
+            openModal('hotelBookingModal');
+        }
+
+        function calculateHotelPrice() {
+            const checkIn = new Date(document.getElementById('hotelCheckIn').value);
+            const checkOut = new Date(document.getElementById('hotelCheckOut').value);
+            
+            if (checkOut <= checkIn) {
+                showNotification('Check-out date must be after Check-in', 'warning');
+                document.getElementById('hotelTotalPrice').textContent = '0';
+                return 0;
+            }
+
+            const diffTime = Math.abs(checkOut - checkIn);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            
+            const guestsSelect = document.getElementById('hotelGuests').value;
+            const roomsNeeded = guestsSelect === '4' ? 2 : 1; 
+
+            const subtotal = selectedRoom.price * diffDays * roomsNeeded;
+            const taxes = subtotal * 0.10;
+            const total = subtotal + taxes;
+
+            document.getElementById('hotelCalculationText').textContent = `₹${selectedRoom.price} x ${diffDays} Night(s) x ${roomsNeeded} Room(s)`;
+            document.getElementById('hotelSubtotal').textContent = `₹${subtotal}`;
+            document.getElementById('hotelTaxes').textContent = `₹${taxes}`;
+            document.getElementById('hotelTotalPrice').textContent = total;
+            
+            return total;
+        }
+
+        function confirmHotelBooking() {
+            const total = calculateHotelPrice();
+            if (total === 0) return;
+
+            const checkIn = document.getElementById('hotelCheckIn').value;
+            const checkOut = document.getElementById('hotelCheckOut').value;
+            const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+
+            app.store.cart.push({
+                id: Date.now(),
+                name: `${selectedHotel.name} - ${selectedRoom.type} (${nights} Nights)`,
+                price: total,
+                emoji: '🏨',
+                quantity: 1,
+                seats: [],
+                total: total
+            });
+
+            saveStore();
+            showNotification(`✅ Hotel room added to cart!`, 'success');
+            closeModal('hotelBookingModal');
+
+            setTimeout(() => {
+                if (confirm('View cart and checkout?')) {
+                    openCheckout();
+                }
+            }, 500);
+        }
+
+        // ============ INITIALIZATION ============
+        window.addEventListener('load', () => {
+            loadStore();
+            goHome();
+            
+            // Remove splash screen after 2.5s
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                if (splash) {
+                    splash.classList.add('hidden');
+                    setTimeout(() => splash.remove(), 800);
+                }
+            }, 4000);
+            
+            // Initial chat message
+            addChatMessage('Hi! 👋 I\'m here to help. Click me anytime!', 'bot');
+        });
+
+        // Prevent default link behavior
+        document.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A' && e.target.href === '#') {
+                e.preventDefault();
+            }
+        });
+    </script>
+
+    <!-- EXPRESS BACKEND INTEGRATION -->
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+
+        // Override loadData to fetch from API
+        async function fetchInitialData() {
+            try {
+                const endpoints = ['movies', 'trains', 'flights', 'buses', 'events', 'hotels'];
+                const promises = endpoints.map(ep => fetch(`${API_BASE}/${ep}`).then(res => res.json()));
+                const results = await Promise.all(promises);
+                
+                endpoints.forEach((ep, i) => {
+                    app.data[ep] = results[i];
+                });
+                console.log('✅ Data loaded from Node.js Express Backend');
+            } catch (err) {
+                console.warn('⚠️ Node.js server unreachable. Using hardcoded fallback data.');
+            }
+        }
+
+        // Initialize with API data
+        window.addEventListener('DOMContentLoaded', async () => {
+            await fetchInitialData();
+            
+            // Re-render the initial views with the loaded data
+            if (!document.getElementById('homeSection').classList.contains('hidden')) {
+                renderHome();
+            }
+        });
+
+        // Override confirmBooking to use API
+        async function confirmBooking() {
+            if (!app.store.currentUser) {
+                openModal('authModal');
+                showNotification('Please login to continue', 'info');
+                return;
+            }
+
+            const confirmBtn = document.querySelector('#bookingModal .btn-primary:last-child');
+            if(!confirmBtn) return;
+            const originalText = confirmBtn.innerHTML;
+            confirmBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Confirming...';
+
+            try {
+                const bookingData = {
+                    category: app.store.currentBooking.category,
+                    itemId: app.store.currentBooking.id,
+                    seats: app.store.selectedSeats,
+                    total: app.store.currentBooking.price * app.store.selectedSeats.length,
+                    date: new Date().toLocaleDateString(),
+                    items: app.store.selectedSeats.map(s => ({
+                        name: `Seat ${s}`,
+                        emoji: app.store.currentBooking.emoji
+                    }))
+                };
+
+                // POST to backend
+                const res = await fetch(`${API_BASE}/bookings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bookingData)
+                });
+                
+                if (!res.ok) throw new Error('Backend error');
+                
+                const savedBooking = await res.json();
+                
+                // Add QR code locally for display
+                savedBooking.qrCode = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TICKETX-' + savedBooking.id;
+                savedBooking.status = 'Confirmed';
+
+                app.store.bookings.push(savedBooking);
+                saveStore();
+                
+                closeModal('bookingModal');
+                showNotification('Booking Confirmed via Express API!', 'success');
+                switchView('dashboard');
+            } catch (err) {
+                console.error('Booking failed via API, falling back to local.', err);
+                
+                // Fallback to local
+                const booking = {
+                    id: Date.now().toString().slice(-6),
+                    category: app.store.currentBooking.category,
+                    items: app.store.selectedSeats.map(s => ({
+                        name: `Seat ${s}`,
+                        emoji: app.store.currentBooking.emoji
+                    })),
+                    total: app.store.currentBooking.price * app.store.selectedSeats.length,
+                    date: new Date().toLocaleDateString(),
+                    status: 'Confirmed',
+                    qrCode: 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TICKETX-' + Date.now()
+                };
+                app.store.bookings.push(booking);
+                saveStore();
+                closeModal('bookingModal');
+                showNotification('Booking Confirmed (Local Fallback)', 'success');
+                switchView('dashboard');
+            } finally {
+                confirmBtn.innerHTML = originalText;
+            }
+        }
+        
+        // Override Login
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const res = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                if(!res.ok) throw new Error('Invalid credentials');
+                const data = await res.json();
+                
+                app.store.currentUser = data.user;
+                saveStore();
+                closeModal('authModal');
+                updateAuthButton();
+                showNotification('Welcome back!', 'success');
+                if(!document.getElementById('profileSection').classList.contains('hidden')) {
+                    renderProfile();
+                }
+            } catch(err) {
+                // Fallback to local
+                const user = app.store.users.find(u => u.email === email && u.password === password);
+                if (user) {
+                    app.store.currentUser = user;
+                    saveStore();
+                    closeModal('authModal');
+                    updateAuthButton();
+                    showNotification('Welcome back (Local)!', 'success');
+                } else {
+                    showNotification('Invalid email or password', 'error');
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>

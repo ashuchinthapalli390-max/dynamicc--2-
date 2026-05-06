@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmed - District</title>
+    <link rel="stylesheet" href="../src/district-app/css/district-style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container header-content">
+            <a href="movies.html" class="logo">DistrictMovies</a>
+        </div>
+    </header>
+
+    <main class="container text-center" style="padding-top: 60px;">
+        <svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle class="success-checkmark circle" cx="26" cy="26" r="25" fill="none"/>
+            <path class="success-checkmark path" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+
+        <h1 style="color: var(--success); margin-bottom: 10px;">Booking Confirmed!</h1>
+        <p class="text-muted mb-20">Your tickets have been successfully booked.</p>
+
+        <div class="summary-card" style="text-align: left; margin-top: 0;">
+            <div class="summary-row">
+                <span class="text-muted">Booking ID</span>
+                <span id="conf-id" style="font-weight: 700; color: var(--primary-color);">BKG123</span>
+            </div>
+            <div class="summary-row">
+                <span class="text-muted">Movie</span>
+                <span id="conf-movie" style="font-weight: 600;">Movie Name</span>
+            </div>
+            <div class="summary-row">
+                <span class="text-muted">Theatre</span>
+                <span id="conf-theatre" style="font-weight: 600;">Theatre Name</span>
+            </div>
+            <div class="summary-row">
+                <span class="text-muted">Time</span>
+                <span id="conf-time" style="font-weight: 600;">Time</span>
+            </div>
+            <div class="summary-row">
+                <span class="text-muted">Seats</span>
+                <span id="conf-seats" style="font-weight: 600;">A1, A2</span>
+            </div>
+            <div class="summary-row total-row">
+                <span>Amount Paid</span>
+                <span id="conf-total">₹0</span>
+            </div>
+        </div>
+
+        <button class="btn" onclick="goToDashboard()">Go to Home</button>
+    </main>
+
+    <script src="../src/district-app/js/dummy-data.js"></script>
+    <script src="../src/district-app/js/app.js"></script>
+</body>
+</html>

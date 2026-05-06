@@ -1,0 +1,21 @@
+<div class="booking-modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Book Your Ticket</h2>
+        <form id="booking-form">
+            <label for="event-name">Event Name:</label>
+            <input type="text" id="event-name" name="event-name" readonly>
+
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date" required>
+
+            <label for="time">Time:</label>
+            <input type="time" id="time" name="time" required>
+
+            <label for="seats">Number of Seats:</label>
+            <input type="number" id="seats" name="seats" min="1" required>
+
+            <button type="submit">Confirm Booking</button>
+        </form>
+    </div>
+</div>

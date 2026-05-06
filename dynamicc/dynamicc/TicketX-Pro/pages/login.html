@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Register - TicketX Pro</title>
+    <link rel="stylesheet" href="../src/css/reset.css">
+    <link rel="stylesheet" href="../src/css/variables.css">
+    <link rel="stylesheet" href="../src/css/global.css">
+    <link rel="stylesheet" href="../src/css/navbar.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .auth-card h2 {
+            color: var(--primary);
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background: #1a7acc;
+        }
+
+        .toggle-form {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .toggle-form a {
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .toggle-form a:hover {
+            text-decoration: underline;
+        }
+
+        .demo-login {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .demo-login strong {
+            display: block;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .demo-login p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .error-msg {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-msg {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .auth-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← Back to Home</a>
+
+    <div class="auth-container">
+        <!-- Login Form -->
+        <div class="auth-card" id="loginCard">
+            <h2>🔐 Login</h2>
+
+            <div class="demo-login">
+                <strong>🎯 Demo Accounts:</strong>
+                <p>📧 demo@ticketx.com</p>
+                <p>🔒 Demo123!</p>
+                <p style="margin-top: 10px; border-top: 1px solid #ddd; padding-top: 10px;">📧 test@ticketx.com</p>
+                <p>🔒 Test123!</p>
+            </div>
+
+            <div class="error-msg" id="loginError"></div>
+            <div class="success-msg" id="loginSuccess"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email" value="demo@ticketx.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" value="Demo123!" required>
+                </div>
+
+                <button type="submit" class="btn-submit">Login Now</button>
+
+                <div class="toggle-form">
+                    Don't have an account? <a onclick="toggleForms(); return false;">Sign Up</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Signup Form -->
+        <div class="auth-card hidden" id="signupCard">
+            <h2>✨ Create Account</h2>
+
+            <div class="error-msg" id="signupError"></div>
+            <div class="success-msg" id="signupSuccess"></div>
+
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" placeholder="Enter your email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signupPhone">Phone</label>
+                    <input type="tel" id="signupPhone" placeholder="Enter your phone number" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="At least 6 characters" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" placeholder="Confirm your password" required>
+                </div>
+
+                <button type="submit" class="btn-submit">Create Account</button>
+
+                <div class="toggle-form">
+                    Already have an account? <a onclick="toggleForms(); return false;">Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Load Scripts -->
+    <script src="../src/js/user-auth.js"></script>
+
+    <script>
+        // Toggle between login and signup
+        function toggleForms() {
+            document.getElementById('loginCard').classList.toggle('hidden');
+            document.getElementById('signupCard').classList.toggle('hidden');
+        }
+
+        // ===== LOGIN FORM HANDLER =====
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const result = userAuth.login(email, password);
+
+            if (result.success) {
+                document.getElementById('loginSuccess').textContent = '✅ ' + result.message;
+                document.getElementById('loginSuccess').style.display = 'block';
+                document.getElementById('loginError').style.display = 'none';
+
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 1000);
+            } else {
+                document.getElementById('loginError').textContent = '❌ ' + result.error;
+                document.getElementById('loginError').style.display = 'block';
+                document.getElementById('loginSuccess').style.display = 'none';
+            }
+        });
+
+        // ===== SIGNUP FORM HANDLER =====
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('signupEmail').value;
+            const fullName = document.getElementById('signupName').value;
+            const phone = document.getElementById('signupPhone').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                document.getElementById('signupError').textContent = '❌ Passwords do not match!';
+                document.getElementById('signupError').style.display = 'block';
+                return;
+            }
+
+            const result = userAuth.signup(email, password, fullName, phone);
+
+            if (result.success) {
+                document.getElementById('signupSuccess').textContent = '✅ ' + result.message;
+                document.getElementById('signupSuccess').style.display = 'block';
+                document.getElementById('signupError').style.display = 'none';
+
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 1000);
+            } else {
+                document.getElementById('signupError').textContent = '❌ ' + result.error;
+                document.getElementById('signupError').style.display = 'block';
+                document.getElementById('signupSuccess').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Bus - TicketX Pro</title>
+    <link rel="stylesheet" href="../src/css/reset.css">
+    <link rel="stylesheet" href="../src/css/variables.css">
+    <link rel="stylesheet" href="../src/css/global.css">
+    <link rel="stylesheet" href="../src/css/navbar.css">
+    <link rel="stylesheet" href="../src/css/search.css">
+    <link rel="stylesheet" href="../src/css/cards.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar__logo" onclick="goToHome()">🎟️ TicketX Pro</div>
+            <ul class="navbar__menu">
+                <li><a href="../index.html">Home</a></li>
+                <li><button class="btn-login" onclick="handleUserClick()">Profile</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <section>
+        <div class="container">
+            <h1>🚌 Book Bus Tickets</h1>
+
+            <!-- Search Form -->
+            <div class="search-container">
+                <form class="search-form" id="busSearchForm">
+                    <div class="form-group">
+                        <label for="busFrom">From</label>
+                        <select id="busFrom" required>
+                            <option value="">Select City</option>
+                            <option value="Hyderabad">Hyderabad</option>
+                            <option value="Bangalore">Bangalore</option>
+                            <option value="Mumbai">Mumbai</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="busTo">To</label>
+                        <select id="busTo" required>
+                            <option value="">Select City</option>
+                            <option value="Hyderabad">Hyderabad</option>
+                            <option value="Bangalore">Bangalore</option>
+                            <option value="Mumbai">Mumbai</option>
+                            <option value="Kochi">Kochi</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="busDate">Travel Date</label>
+                        <input type="date" id="busDate" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Search Buses</button>
+                </form>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="busTypeFilter">Bus Type:</label>
+                    <select id="busTypeFilter" onchange="applyBusFilters()">
+                        <option value="">All Types</option>
+                        <option value="AC Sleeper">AC Sleeper</option>
+                        <option value="Semi Sleeper">Semi Sleeper</option>
+                        <option value="AC Chair">AC Chair</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="amenityFilter">Amenities:</label>
+                    <select id="amenityFilter" onchange="applyBusFilters()">
+                        <option value="">All Amenities</option>
+                        <option value="WiFi">WiFi</option>
+                        <option value="Charging">Charging</option>
+                        <option value="Pillow">Pillow</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Bus Results -->
+            <div id="busesGrid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 TicketX Pro. All rights reserved.</p>
+    </footer>
+
+    <!-- New Booking System -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.5.3/qrcode.min.js"></script>
+    <script src="../src/js/user-auth.js"></script>
+    <script src="../src/js/booking-payment.js"></script>
+    <script src="../src/js/universal-booking.js"></script>
+    <script src="../src/js/navbar-complete.js"></script>
+
+    <!-- Legacy Scripts -->
+    <script src="../src/js/config/images.js"></script>
+    <script src="../src/js/core/storage.js"></script>
+    <script src="../src/js/core/auth.js"></script>
+    <script src="../src/js/core/utils.js"></script>
+    <script src="../src/js/core/router.js"></script>
+    <script src="../src/js/api/bus-api.js"></script>
+    <script src="../src/js/pages/bus.js"></script>
+</body>
+</html>

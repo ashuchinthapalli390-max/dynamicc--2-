@@ -1,0 +1,57 @@
+[
+    {
+        "id": 1,
+        "title": "Concert in the Park",
+        "category": "Music",
+        "date": "2023-11-15",
+        "time": "18:00",
+        "location": "Central Park",
+        "price": 25.00,
+        "description": "Join us for an evening of live music in the park featuring local bands.",
+        "image": "images/concert.jpg"
+    },
+    {
+        "id": 2,
+        "title": "Art Exhibition",
+        "category": "Art",
+        "date": "2023-12-01",
+        "time": "10:00",
+        "location": "City Art Gallery",
+        "price": 15.00,
+        "description": "Explore the latest works from emerging artists at our annual exhibition.",
+        "image": "images/art-exhibition.jpg"
+    },
+    {
+        "id": 3,
+        "title": "Stand-Up Comedy Night",
+        "category": "Comedy",
+        "date": "2023-11-20",
+        "time": "20:00",
+        "location": "Downtown Comedy Club",
+        "price": 30.00,
+        "description": "Laugh the night away with performances from top comedians.",
+        "image": "images/comedy-night.jpg"
+    },
+    {
+        "id": 4,
+        "title": "Theater Play: A Midsummer Night's Dream",
+        "category": "Theater",
+        "date": "2023-11-25",
+        "time": "19:30",
+        "location": "City Theater",
+        "price": 40.00,
+        "description": "Experience Shakespeare's classic play in a modern setting.",
+        "image": "images/theater-play.jpg"
+    },
+    {
+        "id": 5,
+        "title": "Food Festival",
+        "category": "Food",
+        "date": "2023-12-10",
+        "time": "12:00",
+        "location": "Downtown Square",
+        "price": 10.00,
+        "description": "Taste delicious dishes from local food vendors at our annual festival.",
+        "image": "images/food-festival.jpg"
+    }
+]

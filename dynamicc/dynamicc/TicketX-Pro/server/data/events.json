@@ -1,0 +1,5 @@
+[
+                    { "id": 14, "name": "Sunburn Arena", "image": "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&q=80", "location": "Stadium", "price": 2500, "category": "events", "rating": "⭐⭐⭐⭐⭐", "seats": 500 },
+                    { "id": 15, "name": "IPL Final 2026", "image": "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=400&q=80", "location": "Cricket Ground", "price": 3000, "category": "events", "rating": "⭐⭐⭐⭐", "seats": 1000 },
+                    { "id": 16, "name": "Tech Summit", "image": "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400&q=80", "location": "Convention Center", "price": 1500, "category": "events", "rating": "⭐⭐⭐⭐⭐", "seats": 800 }
+                ]

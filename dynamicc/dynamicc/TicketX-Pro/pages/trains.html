@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Trains - TicketX Pro</title>
+    <link rel="stylesheet" href="../src/css/reset.css">
+    <link rel="stylesheet" href="../src/css/variables.css">
+    <link rel="stylesheet" href="../src/css/global.css">
+    <link rel="stylesheet" href="../src/css/navbar.css">
+    <link rel="stylesheet" href="../src/css/search.css">
+    <link rel="stylesheet" href="../src/css/cards.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar__logo" onclick="goToHome()">🎟️ TicketX Pro</div>
+            <ul class="navbar__menu">
+                <li><a href="../index.html">Home</a></li>
+                <li><button class="btn-login" onclick="handleUserClick()">Profile</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <section>
+        <div class="container">
+            <h1>🚂 Book Train Tickets</h1>
+
+            <!-- Search Form -->
+            <div class="search-container">
+                <form class="search-form" id="trainSearchForm">
+                    <div class="form-group">
+                        <label for="fromStation">From Station</label>
+                        <select id="fromStation" required>
+                            <option value="">Select Station</option>
+                            <option value="Hyderabad">Hyderabad</option>
+                            <option value="Bangalore">Bangalore</option>
+                            <option value="Delhi">Delhi</option>
+                            <option value="Mumbai">Mumbai</option>
+                            <option value="Kochi">Kochi</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="toStation">To Station</label>
+                        <select id="toStation" required>
+                            <option value="">Select Station</option>
+                            <option value="Hyderabad">Hyderabad</option>
+                            <option value="Bangalore">Bangalore</option>
+                            <option value="Delhi">Delhi</option>
+                            <option value="Mumbai">Mumbai</option>
+                            <option value="Kochi">Kochi</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="travelDate">Travel Date</label>
+                        <input type="date" id="travelDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="travelClass">Class</label>
+                        <select id="travelClass">
+                            <option value="">All Classes</option>
+                            <option value="Sleeper">Sleeper</option>
+                            <option value="AC 3-Tier">AC 3-Tier</option>
+                            <option value="AC 2-Tier">AC 2-Tier</option>
+                            <option value="Executive Chair">Executive Chair</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Search Trains</button>
+                </form>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <div class="filter-group">
+                    <input type="checkbox" id="filterDeparts" onchange="applyFilters()">
+                    <label for="filterDeparts">Departs Before 10 AM</label>
+                </div>
+                <div class="filter-group">
+                    <input type="checkbox" id="filterArrives" onchange="applyFilters()">
+                    <label for="filterArrives">Arrives Before 10 PM</label>
+                </div>
+            </div>
+
+            <!-- Train Results -->
+            <div id="trainsGrid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 TicketX Pro. All rights reserved.</p>
+    </footer>
+
+    <!-- New Booking System -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.5.3/qrcode.min.js"></script>
+    <script src="../src/js/user-auth.js"></script>
+    <script src="../src/js/booking-payment.js"></script>
+    <script src="../src/js/universal-booking.js"></script>
+    <script src="../src/js/navbar-complete.js"></script>
+
+    <!-- Legacy Scripts -->
+    <script src="../src/js/config/images.js"></script>
+    <script src="../src/js/core/storage.js"></script>
+    <script src="../src/js/core/auth.js"></script>
+    <script src="../src/js/core/utils.js"></script>
+    <script src="../src/js/core/router.js"></script>
+    <script src="../src/js/api/trains-api.js"></script>
+    <script src="../src/js/pages/trains.js"></script>
+</body>
+</html>

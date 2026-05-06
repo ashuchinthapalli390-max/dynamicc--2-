@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Seats - District</title>
+    <link rel="stylesheet" href="../src/district-app/css/district-style.css">
+</head>
+<body style="padding-bottom: 80px;">
+    <header class="header">
+        <div class="container header-content">
+            <a href="movies.html" class="logo">DistrictMovies</a>
+            <div id="booking-info" class="text-muted" style="font-weight: 500;">
+                Movie • Theatre | Time
+            </div>
+        </div>
+    </header>
+
+    <main class="container seat-layout">
+        <div class="seat-legend">
+            <div class="legend-item"><div class="legend-box available"></div> Available</div>
+            <div class="legend-item"><div class="legend-box selected"></div> Selected</div>
+            <div class="legend-item"><div class="legend-box booked"></div> Booked</div>
+        </div>
+
+        <div class="screen">SCREEN THIS WAY</div>
+
+        <div class="seat-grid" id="seat-grid">
+            <!-- Populated by JS -->
+        </div>
+    </main>
+
+    <div class="booking-bar">
+        <div class="container booking-bar-content">
+            <div>
+                <div id="seat-count" style="font-weight: 600;">No seats selected</div>
+                <div id="total-price" style="font-size: 20px; font-weight: 700; color: var(--primary-color);">₹0</div>
+            </div>
+            <button class="btn" id="btn-checkout" style="display: none;" onclick="proceedToCheckout()">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <script src="../src/district-app/js/dummy-data.js"></script>
+    <script src="../src/district-app/js/app.js"></script>
+</body>
+</html>

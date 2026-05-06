@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movies - District</title>
+    <link rel="stylesheet" href="../src/district-app/css/district-style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container header-content">
+            <a href="movies.html" class="logo">DistrictMovies</a>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <input type="text" placeholder="Search for Movies, Events..." style="padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: white;">
+                <span class="text-muted">Hyderabad</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <h2 class="mt-20">Recommended Movies</h2>
+        <div class="grid-movies" id="movies-grid">
+            <!-- Populated by JS -->
+        </div>
+    </main>
+
+    <script src="../src/district-app/js/dummy-data.js"></script>
+    <script src="../src/district-app/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+[
+                    { "id": 11, "name": "IntrCity SmartBus", "image": "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400&q=80", "formats": ["AC Sleeper"], "price": 1200, "category": "buses", "rating": "⭐⭐⭐⭐", "seats": 42 },
+                    { "id": 12, "name": "Orange Travels", "image": "https://images.unsplash.com/photo-1570125909232-eb263c85f48c?w=400&q=80", "formats": ["Non-AC Seater"], "price": 800, "category": "buses", "rating": "⭐⭐⭐", "seats": 42 },
+                    { "id": 13, "name": "VRL Travels", "image": "https://images.unsplash.com/photo-1464219789935-c2d9d9aba644?w=400&q=80", "formats": ["Volvo Multi-Axle"], "price": 1500, "category": "buses", "rating": "⭐⭐⭐⭐⭐", "seats": 32 }
+                ]

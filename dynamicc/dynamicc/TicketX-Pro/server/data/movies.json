@@ -1,0 +1,6 @@
+[
+                    { "id": 1, "name": "Leo", "image": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&q=80", "languages": ["Tamil", "Telugu", "Hindi"], "formats": ["2D", "IMAX"], "price": 250, "category": "movies", "rating": "⭐⭐⭐⭐⭐", "seats": 48 },
+                    { "id": 2, "name": "Salaar", "image": "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=400&q=80", "languages": ["Telugu", "Hindi"], "formats": ["2D"], "price": 300, "category": "movies", "rating": "⭐⭐⭐⭐⭐", "seats": 48 },
+                    { "id": 3, "name": "Fighter", "image": "https://images.unsplash.com/photo-1605786419794-2e90c8f5e714?w=400&q=80", "languages": ["Hindi"], "formats": ["2D", "3D"], "price": 250, "category": "movies", "rating": "⭐⭐⭐⭐", "seats": 48 },
+                    { "id": 4, "name": "Dune: Part Two", "image": "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400&q=80", "languages": ["English", "Hindi"], "formats": ["IMAX", "4DX"], "price": 350, "category": "movies", "rating": "⭐⭐⭐⭐⭐", "seats": 48 }
+                ]

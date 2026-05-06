@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - District</title>
+    <link rel="stylesheet" href="../src/district-app/css/district-style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container header-content">
+            <a href="movies.html" class="logo">DistrictMovies</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1 class="text-center mt-20">Booking Summary</h1>
+        
+        <div class="summary-card">
+            <div class="summary-row">
+                <span class="text-muted">Movie</span>
+                <span id="chk-movie" style="font-weight: 600;">Movie Name</span>
+            </div>
+            <div class="summary-row">
+                <span class="text-muted">Theatre</span>
+                <span id="chk-theatre" style="font-weight: 600;">Theatre Name</span>
+            </div>
+            <div class="summary-row">
+                <span class="text-muted">Time</span>
+                <span id="chk-time" style="font-weight: 600;">Time</span>
+            </div>
+            <div class="summary-row">
+                <span class="text-muted">Seats</span>
+                <span id="chk-seats" style="font-weight: 600;">A1, A2</span>
+            </div>
+            
+            <div style="margin: 20px 0; border-top: 2px dashed var(--border-color);"></div>
+            
+            <div class="summary-row">
+                <span class="text-muted">Tickets Amount</span>
+                <span id="chk-tickets-price">₹0</span>
+            </div>
+            <div class="summary-row">
+                <span class="text-muted">Convenience Fee</span>
+                <span id="chk-fee">₹0</span>
+            </div>
+            
+            <div class="summary-row total-row">
+                <span>Amount Payable</span>
+                <span id="chk-total">₹0</span>
+            </div>
+            
+            <button class="btn btn-full mt-20" onclick="confirmBooking()">Confirm Booking</button>
+        </div>
+    </main>
+
+    <script src="../src/district-app/js/dummy-data.js"></script>
+    <script src="../src/district-app/js/app.js"></script>
+</body>
+</html>
